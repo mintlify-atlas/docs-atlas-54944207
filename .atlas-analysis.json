@@ -1,0 +1,139 @@
+{
+  "projectType": "saas",
+  "projectName": "SIGSAHO",
+  "projectDescription": "Aviation Operations Management System for centralizing, controlling, and optimizing aeronautical operational processes.",
+  "theme": "aspen",
+  "primaryColor": "#2563eb",
+  "lightColor": "#60a5fa",
+  "darkColor": "#1e40af",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/aircraft-management",
+              "features/flight-operations",
+              "features/crew-management",
+              "features/air-traffic-control",
+              "features/dispatch",
+              "features/service-tracking"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "guides/authentication",
+              "guides/dashboard",
+              "guides/reports",
+              "guides/data-export"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/overview",
+              "architecture/frontend",
+              "architecture/backend",
+              "architecture/database"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Authentication",
+            "pages": [
+              "api/auth/overview",
+              "api/auth/login",
+              "api/auth/refresh"
+            ]
+          },
+          {
+            "group": "Aircraft",
+            "pages": [
+              "api/aircraft/overview",
+              "api/aircraft/endpoints",
+              "api/aircraft/documents",
+              "api/aircraft/maintenance"
+            ]
+          },
+          {
+            "group": "Flight Operations",
+            "pages": [
+              "api/flights/overview",
+              "api/flights/transfers",
+              "api/flights/balance"
+            ]
+          },
+          {
+            "group": "Dashboard & Reports",
+            "pages": [
+              "api/dashboard/overview",
+              "api/reports/endpoints"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Deployment",
+        "groups": [
+          {
+            "group": "Setup",
+            "pages": [
+              "deployment/installation",
+              "deployment/configuration",
+              "deployment/environment-variables"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "deployment/docker",
+              "deployment/database-migrations",
+              "deployment/monitoring"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Aircraft fleet management with maintenance tracking",
+    "Flight operations and crew transfer management",
+    "Real-time dashboard and operational statistics",
+    "Air traffic control integration",
+    "Dispatch and service registration",
+    "Document management and audit logs",
+    "Role-based access control and authentication",
+    "Data export to Excel and PDF formats"
+  ],
+  "publicApiSurface": [
+    "POST /auth/login",
+    "POST /auth/refresh",
+    "GET /aircraft",
+    "POST /aircraft",
+    "GET /aircraft/:id",
+    "GET /aircraft-docs",
+    "GET /aircraft-services",
+    "GET /transfers",
+    "POST /transfers",
+    "GET /dashboard/stats",
+    "GET /flight-balance",
+    "GET /crew-members",
+    "GET /users",
+    "GET /roles",
+    "GET /permissions"
+  ]
+}
