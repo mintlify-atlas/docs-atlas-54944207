@@ -1,0 +1,88 @@
+---
+title: 'Flight Operations Overview'
+description: 'Manage flight operations including transfers, crew assignments, and weight & balance calculations'
+---
+
+## Overview
+
+The Flight Operations API provides comprehensive endpoints for managing flight-related operations in the SIGSAHO system. This includes operational transfers, crew member assignments, and weight & balance calculations.
+
+## Core Features
+
+### Transfer Management
+- Create and track operational transfers across different categories (security, civil defense, medical, maintenance)
+- Manage transfer lifecycle with status tracking (PROCESS, FINISHED, CANCELED)
+- Assign and manage crew members for each transfer
+- Track aircraft, routes, fuel consumption, and flight times
+
+### Flight Balance Calculations
+- Create weight & balance calculations for aircraft
+- Track operational empty weight, fuel weight, and total weights
+- Calculate center of gravity (CG) and Mean Aerodynamic Chord (MAC) values
+- Manage detailed load sheets with individual items
+- Generate statistics by aircraft
+
+## Transfer Types
+
+The system supports the following transfer categories:
+
+- **SEGURITY** - Security operations
+- **CIVIL_DEFENSE** - Civil defense missions  
+- **MEDICAL** - Medical transfers and evacuations
+- **MAINTENANCE** - Maintenance flights
+- **OTHER** - Other operational transfers
+
+## Transfer Status Workflow
+
+Transfers follow a status-based workflow:
+
+1. **PROCESS** - Transfer is in progress
+2. **FINISHED** - Transfer completed successfully
+3. **CANCELED** - Transfer was canceled
+
+## Authentication
+
+All Flight Operations endpoints require JWT authentication via cookies. Additionally, specific role-based permissions are enforced:
+
+- **Transfers**: Requires `TRANSFERS_READ` or `TRANSFERS_WRITE` permissions
+- **Flight Balances**: Requires `DESPACHO_READ` or `DESPACHO_WRITE` permissions
+
+## API Endpoints
+
+### Transfers
+- [Transfer Management](/api/flights/transfers) - Create, list, update, and delete transfers
+- Crew assignment and management
+- Status updates and filtering
+
+### Flight Balance
+- [Weight & Balance](/api/flights/balance) - Create and manage weight & balance calculations
+- Aircraft-specific calculations and statistics
+- Detailed load sheet management
+
+## Common Fields
+
+### Timestamps
+All entities include the following timestamp fields:
+- `created_at` - When the record was created
+- `updated_at` - When the record was last modified
+- `deleted_at` - When the record was soft-deleted (if applicable)
+
+### Pagination
+List endpoints support pagination with the following parameters:
+- `page` - Page number (default: 1)
+- `limit` - Records per page (default: 10, max: 100)
+
+Pagination responses include:
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "totalPages": 10,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  }
+}
+```

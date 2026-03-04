@@ -1,0 +1,550 @@
+---
+title: 'Transfer Management'
+description: 'Create and manage operational flight transfers including crew assignments and route tracking'
+---
+
+## Create Transfer
+
+<Card title="POST /transfers" icon="plus">
+  Create a new operational transfer with aircraft, route, and crew information.
+</Card>
+
+### Request Body
+
+<ParamField body="date" type="string" required>
+  Date and time of the transfer in ISO 8601 format
+  
+  Example: `2024-01-15T14:30:00`
+</ParamField>
+
+<ParamField body="time" type="string" required>
+  Duration of the transfer in H:MM format (e.g., "1:40" for 1 hour 40 minutes)
+  
+  Example: `1:40`
+</ParamField>
+
+<ParamField body="description" type="string">
+  Detailed description of the transfer operation
+</ParamField>
+
+<ParamField body="logbook_folio" type="string">
+  Logbook folio number for reference
+  
+  Example: `BIT-2025-001`
+</ParamField>
+
+<ParamField body="request_by" type="string" required>
+  Entity or department requesting the transfer
+  
+  Example: `Secretaría de Seguridad Pública`
+</ParamField>
+
+<ParamField body="fuel" type="integer">
+  Fuel consumption in liters
+  
+  Example: `450`
+</ParamField>
+
+<ParamField body="transfer_route" type="string">
+  Flight route description
+  
+  Example: `Ciudad de México - Guadalajara`
+</ParamField>
+
+<ParamField body="travel_time_route" type="string">
+  Estimated travel time for the route
+  
+  Example: `2:30`
+</ParamField>
+
+<ParamField body="extra_passengers" type="string">
+  Additional passengers information (encrypted)
+  
+  Example: `3 pasajeros adicionales`
+</ParamField>
+
+<ParamField body="type_transfer" type="string" required>
+  Type of transfer operation
+  
+  **Enum values:**
+  - `SEGURITY` - Security operations
+  - `CIVIL_DEFENSE` - Civil defense missions
+  - `MAINTENANCE` - Maintenance flights
+  - `OTHER` - Other operations
+  - `MEDICAL` - Medical transfers
+</ParamField>
+
+<ParamField body="description_transfer_type" type="string">
+  Detailed description of the transfer type
+  
+  **Enum values:**
+  - `PUBLIC_SERVANTS` - Public servants transport
+  - `PUBLIC_SECURITY` - Public security operations
+  - `AERIAL_RECONNAISSANCE` - Aerial reconnaissance
+  - `PUBLIC_NEEDS` - Public needs
+  - `CIVIL_DEFENSE` - Civil defense
+  - `SEARCH_RESCUE_AND_SALVAGE` - Search, rescue and salvage
+  - `SUPPORT_FIGHTING_AND_EXTINGUISHING_FIRES` - Fire fighting support
+  - `SUPPORT_FOR_NATURAL_DISASTERS` - Natural disaster support
+  - `MAINTENANCE` - Maintenance
+  - `DETERRENT_FLIGHT` - Deterrent flight
+  - `NIGHT_FLIGHT` - Night flight
+  - `TRAINING` - Training
+  - `AIRCRAFT_TRANSFER` - Aircraft transfer
+  - `MEDICAL_TRANSFER` - Medical transfer
+  - `OTHER` - Other
+</ParamField>
+
+<ParamField body="aircraft_id" type="integer" required>
+  ID of the aircraft used for the transfer
+</ParamField>
+
+<ParamField body="origin_id" type="integer" required>
+  ID of the origin locality
+</ParamField>
+
+<ParamField body="destination_id" type="integer" required>
+  ID of the destination locality
+</ParamField>
+
+<ParamField body="crew_member_ids" type="array">
+  Array of user IDs for crew members
+  
+  Example: `[1, 2, 3]`
+</ParamField>
+
+<ParamField body="status" type="string">
+  Initial status of the transfer (defaults to PROCESS)
+  
+  **Enum values:**
+  - `PROCESS` - In progress
+  - `FINISHED` - Completed
+  - `CANCELED` - Canceled
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="transfer" type="object">
+  The created transfer object
+  
+  <Expandable title="Transfer Object">
+    <ResponseField name="id" type="number">
+      Unique identifier for the transfer
+    </ResponseField>
+    
+    <ResponseField name="date" type="string">
+      Transfer date and time
+    </ResponseField>
+    
+    <ResponseField name="time" type="number">
+      Transfer duration in minutes
+    </ResponseField>
+    
+    <ResponseField name="time_formatted" type="string">
+      Transfer duration in H:MM format
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      Transfer description
+    </ResponseField>
+    
+    <ResponseField name="number_transfer" type="number">
+      Transfer number
+    </ResponseField>
+    
+    <ResponseField name="logbook_folio" type="string">
+      Logbook folio reference
+    </ResponseField>
+    
+    <ResponseField name="request_by" type="string">
+      Requesting entity
+    </ResponseField>
+    
+    <ResponseField name="fuel" type="number">
+      Fuel consumption
+    </ResponseField>
+    
+    <ResponseField name="transfer_route" type="string">
+      Flight route
+    </ResponseField>
+    
+    <ResponseField name="travel_time_route" type="string">
+      Route travel time
+    </ResponseField>
+    
+    <ResponseField name="extra_passengers" type="string">
+      Additional passengers (encrypted)
+    </ResponseField>
+    
+    <ResponseField name="status" type="string">
+      Transfer status (PROCESS, FINISHED, CANCELED)
+    </ResponseField>
+    
+    <ResponseField name="type_transfer" type="string">
+      Transfer type
+    </ResponseField>
+    
+    <ResponseField name="description_transfer_type" type="string">
+      Transfer type description
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="string">
+      Last update timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example Request
+
+```bash
+curl -X POST https://api.sigsaho.com/transfers \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "date": "2024-01-15T14:30:00",
+    "time": "1:40",
+    "description": "Traslado de funcionarios públicos",
+    "logbook_folio": "BIT-2025-001",
+    "request_by": "Secretaría de Seguridad Pública",
+    "fuel": 450,
+    "transfer_route": "CDMX - GDL",
+    "travel_time_route": "2:00",
+    "type_transfer": "SEGURITY",
+    "description_transfer_type": "PUBLIC_SERVANTS",
+    "aircraft_id": 1,
+    "origin_id": 5,
+    "destination_id": 12,
+    "crew_member_ids": [10, 15, 20]
+  }'
+```
+
+---
+
+## List Transfers
+
+<Card title="GET /transfers" icon="list">
+  Retrieve a paginated list of transfers with optional filters.
+</Card>
+
+### Query Parameters
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Number of records per page (max: 100)
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by transfer status
+  
+  **Values:** `PROCESS`, `FINISHED`, `CANCELED`
+</ParamField>
+
+<ParamField query="type_transfer" type="string">
+  Filter by transfer type. Note: MAINTENANCE and OTHER are grouped together.
+  
+  **Values:** `SEGURITY`, `CIVIL_DEFENSE`, `MAINTENANCE`, `OTHER`, `MEDICAL`
+</ParamField>
+
+<ParamField query="description_transfer_type" type="string">
+  Filter by transfer description type
+</ParamField>
+
+<ParamField query="aircraft_id" type="integer">
+  Filter by aircraft ID
+</ParamField>
+
+<ParamField query="origin_id" type="integer">
+  Filter by origin locality ID
+</ParamField>
+
+<ParamField query="destination_id" type="integer">
+  Filter by destination locality ID
+</ParamField>
+
+<ParamField query="registered_by_id" type="integer">
+  Filter by user who registered the transfer
+</ParamField>
+
+<ParamField query="date_from" type="string">
+  Filter transfers from this date (YYYY-MM-DD)
+</ParamField>
+
+<ParamField query="date_to" type="string">
+  Filter transfers until this date (YYYY-MM-DD)
+</ParamField>
+
+<ParamField query="search" type="string">
+  Search by description, requester, route, or transfer number
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sigsaho.com/transfers?page=1&limit=20&status=PROCESS&type_transfer=SEGURITY" \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Get Transfer by ID
+
+<Card title="GET /transfers/:id" icon="file">
+  Retrieve detailed information about a specific transfer.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET https://api.sigsaho.com/transfers/123 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Update Transfer
+
+<Card title="PUT /transfers/:id" icon="pen">
+  Update an existing transfer's information.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+<ParamField body="date" type="string">
+  Transfer date and time in ISO 8601 format
+</ParamField>
+
+<ParamField body="time" type="string">
+  Duration in H:MM format
+</ParamField>
+
+<ParamField body="description" type="string">
+  Transfer description
+</ParamField>
+
+<ParamField body="number_transfer" type="integer">
+  Transfer number
+</ParamField>
+
+<ParamField body="logbook_folio" type="string">
+  Logbook folio
+</ParamField>
+
+<ParamField body="request_by" type="string">
+  Requesting entity
+</ParamField>
+
+<ParamField body="fuel" type="integer">
+  Fuel consumption
+</ParamField>
+
+<ParamField body="transfer_route" type="string">
+  Flight route
+</ParamField>
+
+<ParamField body="travel_time_route" type="string">
+  Route travel time
+</ParamField>
+
+<ParamField body="extra_passengers" type="string">
+  Additional passengers
+</ParamField>
+
+<ParamField body="type_transfer" type="string">
+  Transfer type
+</ParamField>
+
+<ParamField body="description_transfer_type" type="string">
+  Transfer type description
+</ParamField>
+
+<ParamField body="aircraft_id" type="integer">
+  Aircraft ID
+</ParamField>
+
+<ParamField body="origin_id" type="integer">
+  Origin locality ID
+</ParamField>
+
+<ParamField body="destination_id" type="integer">
+  Destination locality ID
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X PUT https://api.sigsaho.com/transfers/123 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "fuel": 500,
+    "description": "Updated transfer description"
+  }'
+```
+
+---
+
+## Update Transfer Status
+
+<Card title="PATCH /transfers/:id/status" icon="toggle">
+  Change the status of a transfer.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+### Request Body
+
+<ParamField body="status" type="string" required>
+  New transfer status
+  
+  **Values:** `PROCESS`, `FINISHED`, `CANCELED`
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X PATCH https://api.sigsaho.com/transfers/123/status \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "status": "FINISHED"
+  }'
+```
+
+---
+
+## Delete Transfer
+
+<Card title="DELETE /transfers/:id" icon="trash">
+  Soft delete a transfer (logical deletion).
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X DELETE https://api.sigsaho.com/transfers/123 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Assign Crew Members
+
+<Card title="POST /transfers/:id/crew" icon="users">
+  Assign or update crew members for a transfer.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+### Request Body
+
+<ParamField body="user_ids" type="array" required>
+  Array of user IDs to assign as crew members
+  
+  Example: `[1, 2, 3]`
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X POST https://api.sigsaho.com/transfers/123/crew \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "user_ids": [10, 15, 20]
+  }'
+```
+
+---
+
+## Remove Crew Member
+
+<Card title="DELETE /transfers/:id/crew/:userId" icon="user-minus">
+  Remove a specific crew member from a transfer.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Transfer ID
+</ParamField>
+
+<ParamField path="userId" type="integer" required>
+  User ID of the crew member to remove
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X DELETE https://api.sigsaho.com/transfers/123/crew/15 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+Returned when validation fails or invalid data is provided.
+
+```json
+{
+  "error": "ID inválido"
+}
+```
+
+### 401 Unauthorized
+Returned when authentication fails or user is not logged in.
+
+```json
+{
+  "error": "Usuario no autenticado"
+}
+```
+
+### 404 Not Found
+Returned when the requested transfer is not found.
+
+```json
+{
+  "error": "Traslado no encontrado"
+}
+```

@@ -1,0 +1,705 @@
+---
+title: 'Database Architecture'
+description: 'PostgreSQL database schema, entities, and design patterns'
+---
+
+## Overview
+
+SIGSAHO uses PostgreSQL as its primary database, managed through TypeORM. The schema is designed to support aviation operations management with data integrity, performance, and auditability as key priorities.
+
+## Database Technology
+
+- **RDBMS**: PostgreSQL 8.x
+- **ORM**: TypeORM 0.3.27
+- **Migration Strategy**: TypeORM migrations with timestamp-based versioning
+- **Connection Pooling**: Built-in PostgreSQL connection pooling
+
+## Schema Design Principles
+
+### 1. Normalization
+The database follows **Third Normal Form (3NF)** to:
+- Eliminate data redundancy
+- Ensure data consistency
+- Simplify updates and maintenance
+
+### 2. Referential Integrity
+Foreign key constraints enforce relationships:
+```sql
+ALTER TABLE transfers 
+  ADD CONSTRAINT fk_aircraft 
+  FOREIGN KEY (aircraft_id) REFERENCES aircrafts(id) ON DELETE CASCADE;
+```
+
+### 3. Soft Deletes
+Critical entities use soft deletes for audit trails:
+- `deleted_at` timestamp column (nullable)
+- TypeORM `@DeleteDateColumn()` decorator
+- Queries automatically exclude soft-deleted records
+
+### 4. Audit Trails
+- `created_at`: Record creation timestamp
+- `updated_at`: Last modification timestamp
+- `deleted_at`: Soft delete timestamp
+- `audit_logs` table for data mutations
+
+### 5. Performance Optimization
+- Strategic indexes on frequently queried columns
+- Composite indexes for multi-column queries
+- Foreign key indexes for join performance
+
+## Core Entities
+
+### User Management
+
+#### User Entity
+
+**`entities/user.entity.ts`:**
+
+```typescript
+@Entity('users')
+@Index(['name', 'last_name'])  // Composite index for name searches
+@Index(['status', 'login_access'])  // Common filter combination
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+  @Column()
+  last_name: string;
+
+  @Column()
+  second_last_name: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  @Index({ unique: true })
+  username: string | null;
+
+  @Column()
+  @Index({ unique: true })
+  email: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ type: 'varchar', nullable: true, select: false })  // Excluded from default queries
+  password: string | null;
+
+  @Column()
+  login_access: boolean;
+
+  @Column()
+  weight: number;  // Required for flight balance calculations
+
+  @Column({ nullable: true })
+  license_number: string;
+
+  @Column({ nullable: true })
+  birth_date: Date;
+
+  @Column({ nullable: true })
+  position: string;
+
+  @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
+
+  @Column({ type: 'enum', enum: UserTypeSystem, default: UserTypeSystem.SYSTEM })
+  type: UserTypeSystem;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
+
+  // Relationships
+  @ManyToMany(() => Roles, roles => roles.users)
+  @JoinTable({
+    name: 'users_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  roles: Roles[];
+
+  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  refresh_tokens: RefreshToken[];
+
+  // Soft delete hook
+  @AfterSoftRemove()
+  setStatusToEliminated() {
+    this.status = UserStatus.ELIMINATED;
+  }
+}
+```
+
+**Key Features:**
+- Composite index on `(name, last_name)` for efficient full-name searches
+- Unique indexes on `username` and `email` for authentication
+- Password field excluded from default queries (`select: false`)
+- Many-to-many relationship with roles via join table
+- Soft delete automatically sets status to `ELIMINATED`
+
+#### Role Entity
+
+```typescript
+@Entity('roles')
+export class Roles {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  name: string;  // e.g., 'ADMIN', 'PILOT', 'MECHANIC'
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @ManyToMany(() => User, user => user.roles)
+  users: User[];
+}
+```
+
+### Aircraft Management
+
+#### Aircraft Entity
+
+**`entities/aircraft.entity.ts`:**
+
+```typescript
+@Entity('aircrafts')
+export class Aircraft {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+  @Column()
+  registration: string;  // Aircraft registration number
+
+  @Column()
+  img_url: string;
+
+  @Column()
+  description: string;
+
+  @Column({ type: 'enum', enum: AircraftStatus, default: AircraftStatus.ACTIVE })
+  status: AircraftStatus;
+
+  @Column({ type: 'enum', enum: AircraftCategory, default: AircraftCategory.ROTARY_WING })
+  aircraft_category: AircraftCategory;
+
+  @Column({ type: 'int', default: 1 })
+  number_of_engines: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  manufacturer: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  model: string | null;
+
+  // Engine time limits
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  time_limit_m1: number;  // Engine 1 time limit (hours)
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  time_limit_m2: number | null;  // Engine 2 time limit (hours)
+
+  // Engine cycle limits
+  @Column({ type: 'int' })
+  cicle_limit_m1: number;
+
+  @Column({ type: 'int', nullable: true, default: 0 })
+  cicle_limit_m2: number | null;
+
+  // Weight and balance
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  weight_empty: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  cg_empty: number;  // Center of gravity
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  moment_empty: number;
+
+  @Column()
+  max_passengers: number;
+
+  // Flight hours tracking
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  current_time_flying: number;  // Accumulated flight hours
+
+  @Column({ type: 'int', default: 0 })
+  current_cycles: number;  // Accumulated flight cycles
+
+  @Column({ type: 'date', nullable: true })
+  last_major_maintenance_date: Date;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  total_lifetime_hours: number;  // Total hours before next maintenance
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  hours_before_lastMantt: number;  // Hours at last maintenance
+
+  @Column({ type: 'int', default: 0 })
+  total_lifetime_cycles: number;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
+
+  // Relationships
+  @OneToMany(() => AircraftParts, parts => parts.aircraft)
+  aircraft_parts: AircraftParts[];
+
+  @OneToMany(() => AircraftServices, services => services.aircraft)
+  aircraft_services: AircraftServices[];
+
+  @OneToMany(() => Transfers, transfers => transfers.aircraft)
+  transfers: Transfers[];
+
+  // Computed properties
+  get available_time(): number {
+    return Number((this.total_lifetime_hours - this.current_time_flying).toFixed(2));
+  }
+
+  get maintenance_due_percentage(): number {
+    const totalRange = this.total_lifetime_hours - this.hours_before_lastMantt;
+    const used = this.current_time_flying - this.hours_before_lastMantt;
+
+    if (totalRange <= 0 || used <= 0) return 0;
+    return Number(((used / totalRange) * 100).toFixed(2));
+  }
+}
+```
+
+**Key Features:**
+- Tracks flight hours and cycles for maintenance scheduling
+- Supports multi-engine aircraft
+- Weight and balance calculations for flight safety
+- Virtual properties for available flight time and maintenance percentage
+
+### Transfer Operations
+
+#### Transfers Entity
+
+**`entities/transfers.entity.ts`:**
+
+```typescript
+@Index('IDX_transfers_type_status', ['type_transfer', 'status'])  // For statistics queries
+@Index('IDX_transfers_date', ['date'])  // For date range queries
+@Entity('transfers')
+export class Transfers {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'timestamp' })
+  date: Date;
+
+  @Column()
+  time: number;  // Transfer duration in minutes
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'int', nullable: true })
+  number_transfer: number;
+
+  @Column({ nullable: true })
+  logbook_folio: string;
+
+  @Column({ type: 'text' })
+  request_by: string;  // Who requested the transfer
+
+  @Column({ type: 'int', nullable: true })
+  fuel: number;  // Fuel consumed (liters)
+
+  @Column({ type: 'text', nullable: true })
+  transfer_route: string;
+
+  @Column({ type: 'text', nullable: true })
+  travel_time_route: string;
+
+  @Column({ type: 'text', nullable: true, transformer: encryptionTransformer })
+  extra_passengers: string;  // Encrypted for privacy
+
+  @Column({ type: 'enum', enum: TransferStatus, default: TransferStatus.PROCESS })
+  status: TransferStatus;
+
+  @Column({ type: 'enum', enum: TransferType })
+  type_transfer: TransferType;  // MEDICAL, TRAINING, GENERAL, etc.
+
+  @Column({ type: 'enum', enum: TransferDescriptionType, nullable: true })
+  description_transfer_type: TransferDescriptionType;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at: Date;
+
+  // Relationships
+  @ManyToOne(() => Aircraft, aircraft => aircraft.transfers, { nullable: true })
+  @JoinColumn({ name: 'aircraft_id' })
+  aircraft: Aircraft;
+
+  @ManyToOne(() => User, user => user.transfers_registered_by)
+  @JoinColumn({ name: 'registered_by_id' })
+  registered_by: User;
+
+  @ManyToOne(() => Locality, locality => locality.transfers_origin, { nullable: true })
+  @JoinColumn({ name: 'origin_id' })
+  origin: Locality;
+
+  @ManyToOne(() => Locality, locality => locality.transfers_destination, { nullable: true })
+  @JoinColumn({ name: 'destination_id' })
+  destination: Locality;
+
+  @OneToOne(() => MedicalTransfer, medicalTransfer => medicalTransfer.transfer, { nullable: true })
+  @JoinColumn({ name: 'medical_transfer_id' })
+  medical_transfer: MedicalTransfer;
+
+  @OneToMany(() => CrewMembersTransfer, crew => crew.transfer)
+  crew_members_transfer: CrewMembersTransfer[];
+}
+```
+
+**Key Features:**
+- Composite index `(type_transfer, status)` for statistics queries
+- Date index for time-range filtering
+- Encrypted `extra_passengers` field for privacy compliance
+- Polymorphic transfer types (medical, training, general)
+- Geographic relationships (origin/destination localities)
+
+### Audit Logging
+
+#### AuditLog Entity
+
+```typescript
+@Entity('audit_logs')
+@Index(['user_id', 'created_at'])  // For user activity reports
+@Index(['endpoint', 'action'])     // For endpoint usage analytics
+export class AuditLog {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  user_id: number;
+
+  @Column()
+  action: string;  // POST, PUT, PATCH, DELETE
+
+  @Column()
+  endpoint: string;  // API endpoint path
+
+  @Column({ type: 'jsonb', nullable: true })
+  payload: any;  // Request body (sanitized)
+
+  @Column({ type: 'varchar', nullable: true })
+  ip_address: string;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  // Immutable: No update or delete
+}
+```
+
+**Key Features:**
+- JSONB column for flexible payload storage
+- Indexes for user activity and endpoint analytics
+- Immutable (no `updated_at` or `deleted_at`)
+
+## Database Migrations
+
+### Migration Strategy
+
+SIGSAHO uses TypeORM migrations for schema versioning:
+
+**Migration Files:**
+```
+migrations/
+├── 1771397273984-InitialSchema.ts          # Base schema
+├── 1771787268628-SeedRolesAndAdmin.ts      # Seed data: roles and admin
+├── 1771787328628-SeedInitialAircrafts.ts   # Seed data: aircraft fleet
+├── 1771787388628-SeedStaffUsers.ts         # Seed data: staff
+├── 1771872000000-SeedGeographicData.ts     # Seed data: regions, states, etc.
+├── 1771875666542-SeedMedicalTransfers.ts   # Seed data: historical transfers
+├── 1772100000000-AddTransferStatsIndexes.ts # Performance: indexes
+├── 1772200000000-AddAircraftPartsIndexes.ts # Performance: indexes
+├── 1772410929712-ModuleMantaince.ts        # Feature: maintenance module
+└── 1772428576911-CreateAuditLogTable.ts    # Feature: audit logging
+```
+
+### Running Migrations
+
+**Configuration (`config/data_source.ts`):**
+
+```typescript
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: CONFIG.dbHost,
+  port: Number(CONFIG.dbPort),
+  username: CONFIG.dbUser,
+  password: CONFIG.dbPassword,
+  database: CONFIG.dbName,
+  synchronize: isDevelopment && Boolean(CONFIG.apiDbSync),  // Auto-sync in dev
+  logging: true,
+  entities: ['src/entities/*.entity.ts'],
+  migrations: ['src/migrations/*.ts'],
+  migrationsRun: !Boolean(CONFIG.apiDbSync),  // Run migrations if sync is off
+  migrationsTransactionMode: 'each',  // Each migration in its own transaction
+});
+```
+
+**Commands:**
+
+```bash
+# Run pending migrations
+pnpm migration:run
+
+# Revert last migration
+pnpm migration:revert
+
+# Generate migration from entity changes
+pnpm migration:generate -- src/migrations/AddNewFeature
+
+# Create empty migration
+pnpm migration:create -- src/migrations/CustomMigration
+
+# Show migration status
+pnpm migration:show
+```
+
+### Migration Example
+
+**Creating the audit log table:**
+
+```typescript
+import { MigrationInterface, QueryRunner, Table, Index } from 'typeorm';
+
+export class CreateAuditLogTable1772428576911 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.createTable(
+      new Table({
+        name: 'audit_logs',
+        columns: [
+          {
+            name: 'id',
+            type: 'int',
+            isPrimary: true,
+            isGenerated: true,
+            generationStrategy: 'increment',
+          },
+          {
+            name: 'user_id',
+            type: 'int',
+            isNullable: false,
+          },
+          {
+            name: 'action',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'endpoint',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'payload',
+            type: 'jsonb',
+            isNullable: true,
+          },
+          {
+            name: 'ip_address',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'created_at',
+            type: 'timestamp',
+            default: 'now()',
+          },
+        ],
+      }),
+      true,
+    );
+
+    // Add indexes
+    await queryRunner.createIndex(
+      'audit_logs',
+      new Index({
+        name: 'IDX_audit_user_date',
+        columnNames: ['user_id', 'created_at'],
+      }),
+    );
+
+    await queryRunner.createIndex(
+      'audit_logs',
+      new Index({
+        name: 'IDX_audit_endpoint_action',
+        columnNames: ['endpoint', 'action'],
+      }),
+    );
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropTable('audit_logs');
+  }
+}
+```
+
+## Performance Optimization
+
+### Strategic Indexes
+
+**1. Unique Indexes (Constraints + Performance)**
+```typescript
+@Column({ unique: true })
+email: string;
+
+@Index({ unique: true })
+username: string;
+```
+
+**2. Single-Column Indexes**
+```typescript
+@Index('IDX_transfers_date', ['date'])
+```
+
+**3. Composite Indexes (Multi-Column Queries)**
+```typescript
+@Index('IDX_transfers_type_status', ['type_transfer', 'status'])
+@Index(['name', 'last_name'])
+```
+
+**Index Selection Guidelines:**
+- Index foreign keys used in joins
+- Index columns used in `WHERE` clauses
+- Index columns used in `ORDER BY`
+- Use composite indexes for frequently combined filters
+- Monitor index usage and remove unused indexes
+
+### Query Optimization
+
+**1. Eager Loading (Prevent N+1 Queries)**
+```typescript
+const users = await userRepository.find({
+  relations: ['roles', 'user_docs'],  // Load relationships in one query
+});
+```
+
+**2. Select Only Needed Columns**
+```typescript
+const users = await userRepository.find({
+  select: ['id', 'name', 'email'],  // Don't load all columns
+});
+```
+
+**3. Pagination**
+```typescript
+const transfers = await transferRepository.find({
+  skip: (page - 1) * pageSize,
+  take: pageSize,
+});
+```
+
+## Data Security
+
+### 1. Encryption
+
+Sensitive fields are encrypted at rest:
+
+```typescript
+import { ValueTransformer } from 'typeorm';
+import crypto from 'crypto';
+
+export const encryptionTransformer: ValueTransformer = {
+  to: (value: string) => {
+    if (!value) return value;
+    const cipher = crypto.createCipheriv('aes-256-cbc', CONFIG.encryptionKey, CONFIG.encryptionIv);
+    return cipher.update(value, 'utf8', 'hex') + cipher.final('hex');
+  },
+  from: (value: string) => {
+    if (!value) return value;
+    const decipher = crypto.createDecipheriv('aes-256-cbc', CONFIG.encryptionKey, CONFIG.encryptionIv);
+    return decipher.update(value, 'hex', 'utf8') + decipher.final('utf8');
+  },
+};
+
+// Usage:
+@Column({ type: 'text', transformer: encryptionTransformer })
+extra_passengers: string;
+```
+
+### 2. Password Hashing
+
+```typescript
+import bcrypt from 'bcryptjs';
+
+// Before saving user
+user.password = await bcrypt.hash(password, 10);
+
+// Verifying password
+const isValid = await bcrypt.compare(inputPassword, user.password);
+```
+
+### 3. SQL Injection Prevention
+
+TypeORM uses parameterized queries automatically:
+
+```typescript
+// SAFE: TypeORM parameterizes automatically
+const user = await userRepository.findOne({
+  where: { email: userInput },
+});
+
+// UNSAFE: Raw query without parameters (NEVER DO THIS)
+const users = await queryRunner.query(`SELECT * FROM users WHERE email = '${userInput}'`);
+
+// SAFE: Raw query with parameters
+const users = await queryRunner.query(
+  'SELECT * FROM users WHERE email = $1',
+  [userInput]
+);
+```
+
+## Backup and Recovery
+
+**Recommended Strategy:**
+
+1. **Automated Daily Backups**
+```bash
+pg_dump -U postgres -h localhost sigsaho > backup_$(date +%Y%m%d).sql
+```
+
+2. **Point-in-Time Recovery**
+- Enable PostgreSQL WAL (Write-Ahead Logging)
+- Archive WAL files to remote storage
+
+3. **Replication**
+- Set up read replicas for reporting queries
+- Offload analytics from primary database
+
+## Key Takeaways
+
+- **TypeORM**: Type-safe database access with decorators
+- **Migrations**: Version-controlled schema changes
+- **Soft Deletes**: Preserve audit trail with `deleted_at`
+- **Indexes**: Strategic indexing for query performance
+- **Relationships**: Properly defined foreign keys with cascade rules
+- **Security**: Encryption for sensitive data, password hashing, SQL injection prevention
+- **Audit Logging**: Track all data mutations for compliance
+- **Normalization**: 3NF for data consistency

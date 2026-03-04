@@ -1,0 +1,551 @@
+---
+title: Service Tracking
+description: Track aircraft maintenance services, inspections, and compliance requirements
+---
+
+The Service Tracking module provides comprehensive tools for managing aircraft maintenance schedules, tracking service completion, and ensuring regulatory compliance.
+
+## Overview
+
+Service Tracking ensures your aircraft fleet remains airworthy and compliant:
+
+<CardGroup cols={2}>
+  <Card title="Service Scheduling" icon="calendar">
+    Schedule maintenance based on hours, cycles, or calendar dates
+  </Card>
+  <Card title="Compliance Tracking" icon="clipboard-check">
+    Track regulatory inspections and compliance requirements
+  </Card>
+  <Card title="Service History" icon="history">
+    Maintain complete maintenance history for each aircraft
+  </Card>
+  <Card title="Automated Alerts" icon="bell">
+    Receive notifications when services are due or overdue
+  </Card>
+</CardGroup>
+
+## Service Types
+
+SIGSAHO tracks various types of aircraft services:
+
+### Preventive Maintenance
+
+- **100-Hour Inspections**: Required every 100 flight hours for commercial operations
+- **Annual Inspections**: Calendar-based yearly inspections
+- **Progressive Inspections**: Phased inspections for high-utilization aircraft
+- **Preflight Inspections**: Daily or pre-flight checks
+
+### Scheduled Maintenance
+
+- **Phase Checks**: A-check, B-check, C-check maintenance phases
+- **Engine Overhauls**: Time-based or condition-based engine work
+- **Component Replacements**: Life-limited parts reaching time limits
+- **System Servicing**: Hydraulic, fuel, electrical system services
+
+### Unscheduled Maintenance
+
+- **Repairs**: Discrepancy repairs and troubleshooting
+- **Modifications**: Aircraft modifications and upgrades
+- **Airworthiness Directives**: Mandatory AD compliance
+- **Service Bulletins**: Optional or recommended manufacturer bulletins
+
+### Special Inspections
+
+- **Hard Landing Inspections**: After exceeding landing limits
+- **Lightning Strike Inspections**: After lightning encounters
+- **Bird Strike Inspections**: After bird strike incidents
+- **Foreign Object Damage**: FOD inspections and repairs
+
+## Creating a Service Record
+
+<Steps>
+  <Step title="Access Service Tracking">
+    Navigate to the Service Tracking module from the main menu.
+  </Step>
+  <Step title="Create New Service">
+    Click "Schedule Service" to open the service creation form.
+  </Step>
+  <Step title="Select Aircraft">
+    Choose the aircraft that requires service.
+  </Step>
+  <Step title="Choose Service Type">
+    Select the type of service from the dropdown menu.
+  </Step>
+  <Step title="Enter Service Description">
+    Provide a detailed description of the service:
+    - What work needs to be performed
+    - Regulatory reference (if applicable)
+    - Special tools or parts required
+    - Estimated duration
+  </Step>
+  <Step title="Set Service Schedule">
+    Define when the service is due using one or both criteria:
+    - **Calendar Date**: Specific date when service is due
+    - **Flight Hours**: Aircraft hours when service is due
+  </Step>
+  <Step title="Record Current Hours">
+    The system captures aircraft hours at service creation for tracking.
+  </Step>
+  <Step title="Configure Notifications">
+    Set up automatic alerts:
+    - Email addresses to notify
+    - Phone numbers for SMS alerts
+    - Days or hours before due to send reminders
+  </Step>
+  <Step title="Save Service Record">
+    Save the service. It appears in the services list with status "Pending."
+  </Step>
+</Steps>
+
+<Note>
+For recurring services, the system can automatically create the next service record when the current one is completed.
+</Note>
+
+## Service Scheduling Methods
+
+Services can be scheduled using different criteria:
+
+### Calendar-Based Scheduling
+
+Services due on specific calendar dates:
+
+- Annual inspections (e.g., due every 12 months)
+- Certificate renewals
+- Periodic system checks
+- Regulatory compliance deadlines
+
+**Example**: Annual inspection due on December 31, 2026
+
+### Hour-Based Scheduling
+
+Services triggered by flight hours:
+
+- 100-hour inspections
+- Engine time-based overhauls
+- Component replacement intervals
+- Phase maintenance checks
+
+**Example**: 100-hour inspection due at 1250.0 flight hours
+
+### Dual-Criteria Scheduling
+
+Services due based on whichever comes first:
+
+- Calendar date OR flight hours
+- Ensures service isn't missed due to low utilization or high usage
+- Common for critical inspections
+
+**Example**: Inspection due on June 30, 2026 OR at 2000.0 hours (whichever occurs first)
+
+## Service Status Workflow
+
+Services progress through several status states:
+
+### Pending
+
+Service is scheduled but not yet due:
+
+- Appears in upcoming services list
+- Notifications not yet active
+- Aircraft remains available for operations
+- Can be edited or rescheduled
+
+### Due
+
+Service criteria have been met:
+
+- Calendar date has arrived, or
+- Aircraft has reached specified flight hours
+- Notifications automatically sent to configured recipients
+- Aircraft should be scheduled for maintenance soon
+
+### In Progress
+
+Maintenance work has begun:
+
+- Aircraft status may be set to "In Maintenance"
+- Work is actively being performed
+- Parts may be ordered or consumed
+- Technicians assigned
+
+### Completed
+
+Service has been finished and signed off:
+
+- All work completed
+- Documentation uploaded
+- Aircraft returned to service
+- Recurring services auto-schedule next occurrence
+
+### Cancelled
+
+Service was cancelled or no longer required:
+
+- Service not performed
+- Reason for cancellation documented
+- Does not affect aircraft status
+- Retained in history for audit trail
+
+## Completing a Service
+
+When maintenance work is finished:
+
+<Steps>
+  <Step title="Locate Service Record">
+    Find the service in the Services and Inspections table.
+  </Step>
+  <Step title="Open Service Details">
+    Click on the service to view full information.
+  </Step>
+  <Step title="Complete Service">
+    Click "Complete Service" to open the completion form.
+  </Step>
+  <Step title="Enter Completion Date">
+    Record when the service was actually completed.
+  </Step>
+  <Step title="Document Work Performed">
+    Provide detailed completion information:
+    - Summary of work performed
+    - Discrepancies found and resolved
+    - Parts replaced
+    - Technician names and certificate numbers
+    - Hours spent on the work
+  </Step>
+  <Step title="Record Parts Used">
+    Link parts from inventory:
+    - Parts removed (if applicable)
+    - Parts installed
+    - Serial numbers and part numbers
+    - Update inventory quantities
+  </Step>
+  <Step title="Upload Documentation">
+    Attach service documentation:
+    - Work orders
+    - Maintenance logs
+    - Sign-off sheets
+    - Test results
+    - Parts certificates (FAA Form 8130-3, etc.)
+    - Photos (if applicable)
+  </Step>
+  <Step title="Update Aircraft Hours">
+    If needed, update aircraft flight hours to current reading.
+  </Step>
+  <Step title="Return to Service Authorization">
+    If aircraft was grounded:
+    - Verify all work is complete
+    - Confirm aircraft is airworthy
+    - Change aircraft status to "Active"
+    - Document return-to-service authorization
+  </Step>
+  <Step title="Save Completion">
+    Finalize the service record. The system:
+    - Updates service status to "Completed"
+    - Updates aircraft maintenance history
+    - Recalculates maintenance due dates
+    - Creates next occurrence (if recurring)
+    - Archives all documentation
+  </Step>
+</Steps>
+
+<Warning>
+All completed services must include proper documentation and sign-off. Undocumented maintenance cannot legally return an aircraft to service.
+</Warning>
+
+## Service Notifications
+
+Automated notifications help prevent missed maintenance:
+
+### Notification Triggers
+
+Notifications are automatically sent when:
+
+- **Service Approaching**: Configurable days/hours before due
+- **Service Due**: When service criteria are met
+- **Service Overdue**: If service is not completed by due date
+- **Service Completed**: Confirmation when work is finished
+- **Service Cancelled**: If service is cancelled
+
+### Notification Configuration
+
+For each service, configure:
+
+**Recipients**
+- Email addresses (multiple allowed)
+- Phone numbers for SMS
+- Role-based recipients (e.g., all dispatchers)
+
+**Timing**
+- Days before calendar due date
+- Flight hours before hour-based due
+- Escalation intervals for overdue services
+
+**Content**
+- Service description
+- Aircraft identification
+- Due date or hours
+- Priority level
+- Link to service record
+
+### Managing Notification Settings
+
+<Steps>
+  <Step title="Open Service Record">
+    Navigate to the service you want to configure.
+  </Step>
+  <Step title="Edit Notifications">
+    Click "Edit Notifications" or access during service creation.
+  </Step>
+  <Step title="Add Email Recipients">
+    Enter email addresses, separated by commas or one per line.
+  </Step>
+  <Step title="Add SMS Recipients">
+    Enter phone numbers in international format (e.g., +52-xxx-xxx-xxxx).
+  </Step>
+  <Step title="Set Reminder Timing">
+    Configure when notifications are sent:
+    - For calendar-based: Days before due (e.g., 30, 14, 7 days)
+    - For hour-based: Hours before due (e.g., 50, 25, 10 hours)
+  </Step>
+  <Step title="Save Configuration">
+    Save the notification settings to activate alerts.
+  </Step>
+</Steps>
+
+## Service History
+
+Maintain comprehensive maintenance history for each aircraft:
+
+### Viewing Service History
+
+<Steps>
+  <Step title="Select Aircraft">
+    Navigate to Aircraft Management and select an aircraft.
+  </Step>
+  <Step title="Access Service History">
+    Click the "Service History" tab.
+  </Step>
+  <Step title="Review Historical Services">
+    View all completed services:
+    - Service date
+    - Service type and description
+    - Technician/service provider
+    - Work performed
+    - Parts used
+    - Documentation links
+  </Step>
+  <Step title="Filter History">
+    Use filters to narrow the view:
+    - Date range
+    - Service type
+    - Status
+    - Technician
+  </Step>
+</Steps>
+
+### Service History Uses
+
+- **Airworthiness Verification**: Prove compliance during inspections
+- **Pre-Purchase Inspections**: Demonstrate maintenance history to buyers
+- **Troubleshooting**: Review past work when diagnosing recurring issues
+- **Regulatory Compliance**: Provide records to aviation authorities
+- **Warranty Claims**: Document maintenance for warranty purposes
+
+## Parts Integration
+
+Service records integrate with parts inventory:
+
+### Linking Parts to Services
+
+When completing a service:
+
+1. **Parts Removed**: Document removed parts
+   - Part number and serial number
+   - Reason for removal
+   - Time/cycles at removal
+   - Disposition (scrap, repair, bench stock)
+
+2. **Parts Installed**: Record installed parts
+   - Part number and serial number
+   - Manufacturer and certification
+   - Installation date and aircraft hours
+   - Expected life limits
+
+3. **Inventory Updates**: System automatically:
+   - Reduces inventory quantity for installed parts
+   - Updates part status (Installed, Removed, etc.)
+   - Creates part lifecycle tracking
+   - Schedules next replacement if life-limited
+
+### Part Traceability
+
+The system maintains complete part traceability:
+
+- Which service installed the part
+- Aircraft hours at installation
+- Time/cycles accumulated on part
+- Next inspection or replacement due
+- Complete chain of custody
+
+## Regulatory Compliance
+
+Ensure compliance with aviation regulations:
+
+### Airworthiness Directives (ADs)
+
+Track compliance with mandatory ADs:
+
+<Steps>
+  <Step title="Create AD Service Record">
+    When an AD is issued, create a service record for compliance.
+  </Step>
+  <Step title="Enter AD Details">
+    Document:
+    - AD number and title
+    - Effective date
+    - Compliance method
+    - Recurring or one-time
+    - Compliance deadline
+  </Step>
+  <Step title="Track Compliance">
+    Monitor the service until completion.
+  </Step>
+  <Step title="Document Completion">
+    When complied with, complete the service record with:
+    - Method of compliance
+    - Date of compliance
+    - Aircraft hours at compliance
+    - Supporting documentation
+  </Step>
+  <Step title="Recurring ADs">
+    If recurring, the system auto-schedules the next occurrence.
+  </Step>
+</Steps>
+
+### Service Bulletins
+
+Track optional manufacturer service bulletins:
+
+- Record SB number and description
+- Mark as mandatory or optional
+- Schedule compliance if implementing
+- Document decision if not implementing
+
+### Inspection Programs
+
+Manage inspection program compliance:
+
+- Track which inspection program applies (100-hour, progressive, etc.)
+- Ensure inspections are completed within required intervals
+- Maintain records of all inspections
+- Document any program changes or approvals
+
+## Service Analytics
+
+Gain insights from maintenance data:
+
+### Available Metrics
+
+- **Maintenance Cost per Hour**: Total maintenance spend divided by flight hours
+- **Mean Time Between Failures**: Reliability metrics
+- **On-Time Completion Rate**: Percentage of services completed by due date
+- **Aircraft Downtime**: Hours/days aircraft unavailable due to maintenance
+- **Parts Consumption Trends**: Which parts are most frequently replaced
+
+### Generating Service Reports
+
+<Steps>
+  <Step title="Access Reports">
+    Navigate to Service Tracking > Reports.
+  </Step>
+  <Step title="Select Report Type">
+    Choose from available service reports:
+    - Maintenance Summary
+    - Compliance Status
+    - Service Cost Analysis
+    - Upcoming Services Forecast
+    - Service Provider Performance
+  </Step>
+  <Step title="Set Parameters">
+    Define report scope:
+    - Date range
+    - Aircraft (specific or all fleet)
+    - Service types
+    - Status filters
+  </Step>
+  <Step title="Generate and Export">
+    Create the report and export in PDF, Excel, or CSV format.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Schedule Maintenance in Advance">
+    Don't wait until services are due. Schedule maintenance windows at least 30 days in advance to ensure aircraft availability and parts procurement.
+  </Accordion>
+  
+  <Accordion title="Complete Documentation">
+    Always upload complete documentation for every service. Include work orders, logbook entries, parts certificates, and sign-offs. Incomplete records can ground aircraft during audits.
+  </Accordion>
+  
+  <Accordion title="Track Part Serial Numbers">
+    For all serialized parts, maintain complete records of serial numbers, installation dates, and time limits. This is critical for airworthiness.
+  </Accordion>
+  
+  <Accordion title="Use Recurring Services">
+    For regular inspections (100-hour, annual), set up recurring services so the system automatically creates the next service when the current one is completed.
+  </Accordion>
+  
+  <Accordion title="Monitor Service Trends">
+    Review service analytics regularly to identify recurring issues or opportunities to improve maintenance efficiency and reduce costs.
+  </Accordion>
+  
+  <Accordion title="Verify Technician Qualifications">
+    Always verify that technicians performing maintenance hold appropriate licenses and ratings for the work being performed.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Service Not Showing as Due">
+    If a service isn't triggering as due:
+    - Verify the due date or hours are set correctly
+    - Check that aircraft current hours are updating after flights
+    - Ensure the service status is "Pending" not "Cancelled"
+    - Review notification configuration
+  </Accordion>
+  
+  <Accordion title="Cannot Complete Service">
+    If unable to complete a service:
+    - Ensure you have appropriate permissions (dispatcher or admin role)
+    - Verify all required fields are filled in
+    - Check that completion date is not in the future
+    - Confirm supporting documentation is attached
+  </Accordion>
+  
+  <Accordion title="Notifications Not Being Sent">
+    If notifications aren't working:
+    - Verify email addresses are correct and not typos
+    - Check spam/junk folders
+    - Ensure notification timing is configured
+    - Confirm system email settings are correct (contact administrator)
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Aircraft Management" icon="plane" href="/features/aircraft-management">
+    Manage aircraft fleet and track hours
+  </Card>
+  <Card title="Dispatch" icon="tower-control" href="/features/dispatch">
+    Coordinate dispatch and maintenance
+  </Card>
+  <Card title="Flight Operations" icon="plane-departure" href="/features/flight-operations">
+    Flight operations that trigger hour-based maintenance
+  </Card>
+  <Card title="Crew Management" icon="users" href="/features/crew-management">
+    Manage maintenance technicians
+  </Card>
+</CardGroup>

@@ -1,0 +1,652 @@
+---
+title: 'Backend Architecture'
+description: 'Express.js REST API with TypeORM and PostgreSQL'
+---
+
+## Overview
+
+The SIGSAHO backend is a RESTful API built with Express.js, TypeORM, and PostgreSQL. It follows a layered architecture pattern with clear separation between routing, business logic, and data access.
+
+## Architecture Layers
+
+```text
+┌─────────────────────────────────────────────┐
+│           HTTP Middleware Stack             │
+│  Rate Limit → JWT → RBAC → Validation      │
+└─────────────┬───────────────────────────────┘
+              │
+┌─────────────▼───────────────────────────────┐
+│          Controllers (Routes)                │
+│  HTTP request/response handling             │
+└─────────────┬───────────────────────────────┘
+              │
+┌─────────────▼───────────────────────────────┐
+│          Services (Business Logic)           │
+│  Domain logic, validations, orchestration   │
+└─────────────┬───────────────────────────────┘
+              │
+┌─────────────▼───────────────────────────────┐
+│      Repositories (TypeORM)                  │
+│  Data access, queries, transactions         │
+└─────────────┬───────────────────────────────┘
+              │
+┌─────────────▼───────────────────────────────┐
+│         Database (PostgreSQL)                │
+│  Persistence, constraints, indexes          │
+└─────────────────────────────────────────────┘
+```
+
+## Directory Structure
+
+```text
+src/
+├── app.ts                 # Express app configuration
+├── index.ts               # Entry point
+├── config/                # Configuration
+│   ├── config.ts         # Environment variables
+│   ├── data_source.ts    # TypeORM configuration
+│   └── swagger.ts        # API documentation
+├── middlewares/           # Express middlewares
+│   ├── jwt.middleware.ts
+│   ├── roles.middleware.ts
+│   ├── rate-limit.middleware.ts
+│   ├── validation.middleware.ts
+│   ├── error-handler.middleware.ts
+│   └── audit-log.middleware.ts
+├── routes/                # Route definitions
+│   ├── auth.routes.ts
+│   ├── users.routes.ts
+│   ├── aircraft.routes.ts
+│   └── ...
+├── controllers/           # Request handlers
+│   ├── auth.controller.ts
+│   ├── users.controller.ts
+│   ├── aircraft.controller.ts
+│   └── ...
+├── services/              # Business logic
+│   ├── auth.service.ts
+│   ├── users.service.ts
+│   ├── aircraft.service.ts
+│   └── ...
+├── entities/              # TypeORM entities
+│   ├── user.entity.ts
+│   ├── aircraft.entity.ts
+│   ├── transfers.entity.ts
+│   └── ...
+├── migrations/            # Database migrations
+│   ├── 1771397273984-InitialSchema.ts
+│   ├── 1771787268628-SeedRolesAndAdmin.ts
+│   └── ...
+├── schemas/               # Zod validation schemas
+├── enums/                 # TypeScript enums
+├── types/                 # TypeScript types
+├── utils/                 # Utilities
+└── cronjobs/              # Scheduled tasks
+```
+
+## Application Bootstrap
+
+The application initialization follows a structured sequence:
+
+**`src/app.ts`** - Express configuration:
+
+```typescript
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { burstLimiter, generalLimiter } from './middlewares/rate-limit.middleware';
+import { auditLogMiddleware } from './middlewares/audit-log.middleware';
+
+const app = express();
+
+// Trust proxy (required for rate limiting behind proxies)
+app.set('trust proxy', CONFIG.trustProxyLevel);
+
+// Body parsers
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Cookie parser
+app.use(cookieParser());
+
+// Security headers (Helmet)
+app.use(helmet({
+  contentSecurityPolicy: { /* ... */ },
+  strictTransportSecurity: { /* ... */ },
+  xFrameOptions: { action: 'deny' },
+}));
+
+// CORS
+app.use(cors({
+  origin: CONFIG.apiCorsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+}));
+
+// HTTP request logging
+app.use(morgan('dev'));
+
+// API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Global middlewares
+app.use('/api/v1', burstLimiter, generalLimiter, auditLogMiddleware);
+
+// Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', usersRoutes);
+app.use('/api/v1/aircrafts', aircraftRoutes);
+// ... more routes
+
+// Error handler (MUST BE LAST)
+app.use(errorHandler);
+```
+
+## Middleware Stack
+
+Requests flow through multiple middleware layers:
+
+### 1. Trust Proxy
+```typescript
+app.set('trust proxy', CONFIG.trustProxyLevel);
+```
+Required for correct IP detection behind load balancers/proxies.
+
+### 2. Body Parsers
+```typescript
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+```
+Parse JSON and URL-encoded request bodies.
+
+### 3. Cookie Parser
+```typescript
+app.use(cookieParser());
+```
+Parse cookies from request headers (used for JWT tokens).
+
+### 4. Helmet (Security Headers)
+```typescript
+app.use(helmet({
+  contentSecurityPolicy: { /* CSP directives */ },
+  strictTransportSecurity: { maxAge: 63072000 },
+  xFrameOptions: { action: 'deny' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
+```
+Sets security-related HTTP headers:
+- Content-Security-Policy
+- Strict-Transport-Security (HSTS)
+- X-Frame-Options (prevent clickjacking)
+- X-Content-Type-Options (prevent MIME sniffing)
+
+### 5. CORS
+```typescript
+app.use(cors({
+  origin: CONFIG.apiCorsOrigin,
+  credentials: true,  // Allow cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+```
+
+### 6. Rate Limiting (Two-Tier Strategy)
+
+**`middlewares/rate-limit.middleware.ts`:**
+
+```typescript
+import rateLimit from 'express-rate-limit';
+
+// Tier 1: Burst protection (prevents automated attacks)
+export const burstLimiter = rateLimit({
+  windowMs: 1000,        // 1 second
+  max: 30,               // 30 requests per second
+  message: 'Too many requests, please slow down',
+});
+
+// Tier 2: Sustained rate limiting
+export const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 1000 : 2000,
+  message: 'Request limit exceeded, try again later',
+});
+```
+
+### 7. Audit Logging
+
+**`middlewares/audit-log.middleware.ts`:**
+
+Logs all data-modifying operations (POST, PUT, PATCH, DELETE):
+
+```typescript
+export const auditLogMiddleware = async (req, res, next) => {
+  const mutatingMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+  
+  if (mutatingMethods.includes(req.method) && req.user) {
+    // Log to audit_logs table
+    await auditLogRepository.save({
+      user_id: req.user.id,
+      action: req.method,
+      endpoint: req.path,
+      timestamp: new Date(),
+      ip_address: req.ip,
+      payload: req.body,
+    });
+  }
+  
+  next();
+};
+```
+
+### 8. JWT Authentication
+
+**`middlewares/jwt.middleware.ts`:**
+
+```typescript
+import jwt from 'jsonwebtoken';
+
+export const jwtMiddleware = async (req, res, next) => {
+  // Extract token from httpOnly cookie
+  const accessToken = req.cookies?.accessToken;
+
+  if (!accessToken) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
+
+  try {
+    // Verify JWT signature
+    const decoded = jwt.verify(accessToken, CONFIG.apiTokenSecret);
+
+    // Load user from database
+    const user = await userRepository.findOne({
+      where: { id: decoded.id },
+      relations: ['roles'],
+    });
+
+    if (!user || user.status !== 'ACTIVE' || !user.login_access) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+```
+
+### 9. Role-Based Authorization
+
+**`middlewares/roles.middleware.ts`:**
+
+```typescript
+export const requireRoles = (...allowedRoles: string[]) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const userRoles = req.user.roles.map(r => r.name);
+    const hasRole = allowedRoles.some(role => userRoles.includes(role));
+
+    if (!hasRole) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+
+    next();
+  };
+};
+```
+
+**Usage:**
+
+```typescript
+// Only admins can delete users
+router.delete('/users/:id', jwtMiddleware, requireRoles('ADMIN'), deleteUser);
+```
+
+### 10. Request Validation
+
+**`middlewares/validation.middleware.ts`:**
+
+Validates request body against Zod schemas:
+
+```typescript
+import { z } from 'zod';
+
+export const validate = (schema: z.ZodSchema) => {
+  return (req, res, next) => {
+    try {
+      schema.parse(req.body);
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: error.errors,
+        });
+      }
+      next(error);
+    }
+  };
+};
+```
+
+## Authentication Flow
+
+### JWT-Based Authentication with Refresh Tokens
+
+SIGSAHO uses a dual-token strategy:
+- **Access Token**: Short-lived (15 minutes), used for API requests
+- **Refresh Token**: Long-lived (30 days), used to get new access tokens
+
+Both tokens are stored in httpOnly cookies for security.
+
+**`services/auth.service.ts`:**
+
+```typescript
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+export class AuthService {
+  async login(identifier: string, password: string) {
+    // Find user by username or email
+    const user = await userRepository.findOne({
+      where: [
+        { username: identifier },
+        { email: identifier },
+      ],
+      relations: ['roles'],
+      select: ['id', 'password', 'email', 'username', 'status', 'login_access'],
+    });
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Check user status
+    if (user.status !== 'ACTIVE' || !user.login_access) {
+      throw new Error('User account is inactive');
+    }
+
+    // Generate tokens
+    const accessToken = jwt.sign(
+      { id: user.id, email: user.email, roles: user.roles.map(r => r.name) },
+      CONFIG.apiTokenSecret,
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      CONFIG.jwtRefreshTokenSecret,
+      { expiresIn: '30d' }
+    );
+
+    // Store refresh token in database
+    await refreshTokenRepository.save({
+      user,
+      token: refreshToken,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    return { user, accessToken, refreshToken };
+  }
+
+  async refreshToken(refreshToken: string) {
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, CONFIG.jwtRefreshTokenSecret);
+
+    // Check if token exists in database
+    const storedToken = await refreshTokenRepository.findOne({
+      where: { token: refreshToken },
+      relations: ['user', 'user.roles'],
+    });
+
+    if (!storedToken || storedToken.expires_at < new Date()) {
+      throw new Error('Invalid or expired refresh token');
+    }
+
+    // Generate new access token
+    const accessToken = jwt.sign(
+      { id: storedToken.user.id, email: storedToken.user.email },
+      CONFIG.apiTokenSecret,
+      { expiresIn: '15m' }
+    );
+
+    // Optional: Rotate refresh token (recommended)
+    const newRefreshToken = jwt.sign(
+      { id: storedToken.user.id },
+      CONFIG.jwtRefreshTokenSecret,
+      { expiresIn: '30d' }
+    );
+
+    // Delete old refresh token
+    await refreshTokenRepository.delete(storedToken.id);
+
+    // Store new refresh token
+    await refreshTokenRepository.save({
+      user: storedToken.user,
+      token: newRefreshToken,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    return { user: storedToken.user, accessToken, refreshToken: newRefreshToken };
+  }
+
+  async logout(refreshToken: string) {
+    // Delete refresh token from database
+    await refreshTokenRepository.delete({ token: refreshToken });
+  }
+
+  async logoutAll(userId: number) {
+    // Delete all refresh tokens for user
+    await refreshTokenRepository.delete({ user: { id: userId } });
+  }
+}
+```
+
+**`controllers/auth.controller.ts`:**
+
+```typescript
+export const login = async (req, res) => {
+  const { identifier, password } = req.body;
+  const { user, accessToken, refreshToken } = await authService.login(identifier, password);
+
+  // Set httpOnly cookies
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: CONFIG.cookieSecure,  // true in production
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000,  // 15 minutes
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: CONFIG.cookieSecure,
+    sameSite: 'strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 days
+  });
+
+  res.json({ message: 'Login successful', user });
+};
+```
+
+## Service Layer Pattern
+
+Services encapsulate business logic and orchestrate data access:
+
+**Example: `services/aircraft.service.ts`**
+
+```typescript
+import { AppDataSource } from '../config/data_source';
+import { Aircraft } from '../entities/aircraft.entity';
+
+export class AircraftService {
+  private repository = AppDataSource.getRepository(Aircraft);
+
+  async findAll() {
+    return await this.repository.find({
+      relations: ['aircraft_parts', 'aircraft_services'],
+      order: { created_at: 'DESC' },
+    });
+  }
+
+  async findById(id: number) {
+    const aircraft = await this.repository.findOne({
+      where: { id },
+      relations: ['aircraft_parts', 'aircraft_services', 'transfers'],
+    });
+
+    if (!aircraft) {
+      throw new Error('Aircraft not found');
+    }
+
+    return aircraft;
+  }
+
+  async create(data: CreateAircraftDto, userId: number) {
+    // Business logic: validate data
+    if (data.number_of_engines < 1) {
+      throw new Error('Aircraft must have at least one engine');
+    }
+
+    // Create entity
+    const aircraft = this.repository.create({
+      ...data,
+      registered_by: { id: userId },
+    });
+
+    return await this.repository.save(aircraft);
+  }
+
+  async update(id: number, data: UpdateAircraftDto) {
+    const aircraft = await this.findById(id);
+
+    // Merge updates
+    Object.assign(aircraft, data);
+
+    return await this.repository.save(aircraft);
+  }
+
+  async delete(id: number) {
+    const aircraft = await this.findById(id);
+
+    // Business logic: prevent deletion if aircraft has active transfers
+    const activeTransfers = await transferRepository.count({
+      where: { aircraft: { id }, status: 'ACTIVE' },
+    });
+
+    if (activeTransfers > 0) {
+      throw new Error('Cannot delete aircraft with active transfers');
+    }
+
+    // Soft delete
+    aircraft.status = 'ELIMINATED';
+    await this.repository.save(aircraft);
+    await this.repository.softRemove(aircraft);
+  }
+}
+```
+
+## Error Handling
+
+**`middlewares/error-handler.middleware.ts`:**
+
+```typescript
+export const errorHandler = (err, req, res, next) => {
+  console.error(err);
+
+  // TypeORM errors
+  if (err.name === 'QueryFailedError') {
+    return res.status(400).json({
+      error: 'Database query failed',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  // Zod validation errors
+  if (err.name === 'ZodError') {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: err.errors,
+    });
+  }
+
+  // Default error
+  res.status(500).json({
+    error: 'Internal server error',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+  });
+};
+```
+
+## API Documentation (Swagger)
+
+SIGSAHO uses Swagger for API documentation:
+
+**`config/swagger.ts`:**
+
+```typescript
+import swaggerJsdoc from 'swagger-jsdoc';
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'SIGSAHO API',
+      version: '1.0.0',
+      description: 'Aviation Operations Management System API',
+    },
+    servers: [
+      { url: 'http://localhost:8080/api/v1', description: 'Development' },
+      { url: 'https://api.sigsaho.com/api/v1', description: 'Production' },
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'accessToken',
+        },
+      },
+    },
+  },
+  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+};
+
+export const swaggerSpec = swaggerJsdoc(options);
+```
+
+**Access documentation at:** `http://localhost:8080/api-docs`
+
+## Database Integration
+
+See [Database Architecture](/architecture/database) for detailed information on:
+- TypeORM entities
+- Relationships
+- Migrations
+- Indexes
+- Soft deletes
+
+## Key Takeaways
+
+- **Layered Architecture**: Clear separation of concerns (routes → controllers → services → repositories)
+- **Security-First**: Helmet, CORS, rate limiting, JWT authentication, RBAC
+- **Middleware Stack**: Composable request processing pipeline
+- **TypeORM Integration**: Type-safe database access with migrations
+- **Error Handling**: Centralized error handling with appropriate HTTP status codes
+- **API Documentation**: Auto-generated Swagger documentation
+- **Audit Logging**: All data modifications tracked for compliance

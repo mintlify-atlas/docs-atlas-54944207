@@ -1,0 +1,373 @@
+---
+title: Monitoring & Operations
+description: Audit logs, scheduled jobs, and operational monitoring for SIGSAHO
+---
+
+## Overview
+
+SIGSAHO implements comprehensive operational monitoring through audit logging, automated cron jobs, and rate limiting to ensure system reliability and security compliance.
+
+## Audit Logging
+
+### Audit Log System
+
+All mutating HTTP operations (POST, PUT, PATCH, DELETE) are automatically logged to the `audit_logs` table via the audit log middleware.
+
+#### Captured Information
+
+The audit log entity (`/home/daytona/workspace/source/back/src/entities/audit-log.entity.ts:4-44`) tracks:
+
+- **user_id**: Authenticated user ID (null for failed login attempts)
+- **user_identifier**: Email/username from request body (useful for tracking failed logins)
+- **ip_address**: Client IP address
+- **user_agent**: Client browser/application identifier
+- **method**: HTTP method (POST, PUT, PATCH, DELETE)
+- **endpoint**: Full URI of the affected resource
+- **payload**: Sanitized request body (passwords and tokens removed)
+- **before_data**: Resource state before modification (PUT, PATCH, DELETE only)
+- **http_status**: HTTP response code
+- **timestamp**: Operation timestamp
+
+### Middleware Configuration
+
+Audit logging is enabled globally in `/home/daytona/workspace/source/back/src/app.ts:117`:
+
+```typescript
+app.use('/api/v1', burstLimiter, generalLimiter, auditLogMiddleware);
+```
+
+All requests to `/api/v1/*` pass through the audit log middleware after rate limiting.
+
+### Querying Audit Logs
+
+#### View recent changes by user
+
+```sql
+SELECT 
+  timestamp,
+  method,
+  endpoint,
+  http_status
+FROM audit_logs
+WHERE user_id = 123
+ORDER BY timestamp DESC
+LIMIT 50;
+```
+
+#### Track failed login attempts
+
+```sql
+SELECT 
+  user_identifier,
+  ip_address,
+  timestamp,
+  http_status
+FROM audit_logs
+WHERE endpoint LIKE '%/auth/login%'
+  AND http_status >= 400
+ORDER BY timestamp DESC;
+```
+
+#### Audit resource modifications
+
+```sql
+SELECT 
+  user_id,
+  method,
+  endpoint,
+  before_data,
+  payload,
+  timestamp
+FROM audit_logs
+WHERE endpoint LIKE '%/aircrafts/%'
+  AND method IN ('PUT', 'PATCH', 'DELETE')
+ORDER BY timestamp DESC;
+```
+
+### Data Sanitization
+
+<Warning>
+The audit middleware automatically sanitizes sensitive fields (passwords, tokens) from the payload before storage. Never log raw authentication credentials.
+</Warning>
+
+## Scheduled Jobs (Cron)
+
+### Cron Job Architecture
+
+SIGSAHO uses `node-cron` to schedule automated maintenance tasks. Jobs are initialized on application startup in `/home/daytona/workspace/source/back/src/index.ts:17`:
+
+```typescript
+initializeCronJobs();
+```
+
+### Active Cron Jobs
+
+All cron jobs are registered in `/home/daytona/workspace/source/back/src/cronjobs/index.ts:9-27`:
+
+#### 1. Update Aircraft Status
+
+**Function**: `updateAircraftStatusCron()`  
+**Purpose**: Recalculates aircraft operational status based on maintenance requirements  
+**Frequency**: Configured in implementation
+
+#### 2. Update Parts Status
+
+**Function**: `updatePartsStatusCron()`  
+**Purpose**: Updates aircraft parts status based on usage hours and service intervals  
+**Frequency**: Configured in implementation
+
+#### 3. Service Notifications
+
+**Function**: `checkServiceNotificationsCron()`  
+**Schedule**: Daily at 8:00 AM  
+**Purpose**: Evaluates upcoming aircraft service requirements and sends notifications
+
+#### 4. User Document Notifications
+
+**Function**: `checkUserDocNotificationsCron()`  
+**Schedule**: Daily at 8:05 AM  
+**Purpose**: Checks for expiring user certifications and documents, sends reminders
+
+### Monitoring Cron Jobs
+
+Cron job initialization is logged on application startup:
+
+```
+=================================================
+Inicializando Cronjobs
+=================================================
+Registering: updateAircraftStatusCron
+Registering: updatePartsStatusCron
+Registering: checkServiceNotificationsCron
+Registering: checkUserDocNotificationsCron
+=================================================
+Todos los cronjobs han sido registrados
+=================================================
+```
+
+Check application logs to verify cron job execution:
+
+```bash
+pnpm dev | grep -i cron
+```
+
+## Rate Limiting
+
+### Three-Layer Security Strategy
+
+SIGSAHO implements a multi-layer rate limiting strategy defined in `/home/daytona/workspace/source/back/src/app.ts:113-117`:
+
+#### Layer 1: Burst Limiter
+
+- **Purpose**: Block automated attack bursts
+- **Limit**: >30 requests/second per IP
+- **Action**: Immediate rejection with 429 status
+
+#### Layer 2: General Limiter
+
+- **Production**: 1000 requests per 15 minutes
+- **Development**: 2000 requests per 15 minutes
+- **Scope**: Per IP address
+- **Action**: Temporary blocking after quota exceeded
+
+#### Layer 3: Audit Logging
+
+- **Applies to**: POST, PUT, PATCH, DELETE operations
+- **Action**: Log to `audit_logs` table
+- **Purpose**: Compliance and forensics
+
+### Proxy Configuration
+
+SIGSAHO trusts the first proxy for correct IP detection:
+
+```typescript
+app.set('trust proxy', CONFIG.trustProxyLevel);
+```
+
+This ensures rate limiting works correctly behind reverse proxies (nginx, load balancers).
+
+## Application Logging
+
+### Morgan HTTP Logger
+
+HTTP request logging uses Morgan middleware in development mode:
+
+```typescript
+app.use(morgan('dev'));
+```
+
+Logs include:
+- HTTP method
+- Request path
+- Response status code
+- Response time
+- Content length
+
+### TypeORM Query Logging
+
+Database query logging is enabled in `/home/daytona/workspace/source/back/src/config/data_source.ts:51`:
+
+```typescript
+logging: true,
+```
+
+All SQL queries are logged to console for debugging.
+
+<Warning>
+Disable query logging in production to prevent performance degradation and log file bloat. Set `logging: false` or `logging: ['error']`.
+</Warning>
+
+## Health Monitoring
+
+### Database Connection Health
+
+The application checks database connectivity on startup in `/home/daytona/workspace/source/back/src/index.ts:10-21`:
+
+```typescript
+await AppDataSource.initialize();
+console.log('Database connected');
+```
+
+Failure to connect terminates the application with exit code 1.
+
+### Application Startup
+
+Successful startup logs:
+
+```
+Database connected
+Server is running on port 3001
+API URL: http://localhost:3001/
+Swagger Docs: http://localhost:3001/api-docs
+```
+
+### Manual Health Checks
+
+<Steps>
+  <Step title="Check database connectivity">
+    ```bash
+    docker exec -it db-postgres-servicio-hangar pg_isready -U postgres
+    ```
+    
+    Should return: `accepting connections`
+  </Step>
+
+  <Step title="Verify API availability">
+    ```bash
+    curl http://localhost:3001/api-docs
+    ```
+    
+    Should return Swagger documentation HTML.
+  </Step>
+
+  <Step title="Check active database connections">
+    ```sql
+    SELECT count(*) FROM pg_stat_activity WHERE datname = 'estadistica-hangar';
+    ```
+  </Step>
+
+  <Step title="Monitor query performance">
+    ```sql
+    SELECT 
+      query,
+      state,
+      wait_event_type,
+      query_start
+    FROM pg_stat_activity
+    WHERE datname = 'estadistica-hangar'
+      AND state = 'active';
+    ```
+  </Step>
+</Steps>
+
+## Security Headers
+
+### Helmet Middleware
+
+SIGSAHO uses Helmet to set security-focused HTTP headers (`/home/daytona/workspace/source/back/src/app.ts:28-65`):
+
+- **Content Security Policy**: Restricts resource origins
+- **Strict Transport Security**: Forces HTTPS in production
+- **X-Frame-Options**: Prevents clickjacking
+- **X-Content-Type-Options**: Prevents MIME sniffing
+- **Referrer Policy**: Controls referrer information leakage
+
+### CORS Configuration
+
+CORS is configured to allow credentials (httpOnly cookies) from trusted origins:
+
+```typescript
+cors({
+  origin: CONFIG.apiCorsOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200,
+})
+```
+
+Configure `CORS_ORIGIN` in `.env` to restrict API access:
+
+```bash
+# Development - allow all
+CORS_ORIGIN=*
+
+# Production - restrict to frontend domain
+CORS_ORIGIN=https://sigsaho.example.com
+```
+
+## Operational Best Practices
+
+### Log Rotation
+
+Implement log rotation to prevent disk space exhaustion:
+
+```bash
+# Install PM2 for process management and log rotation
+pnpm install -g pm2
+
+# Start with log rotation
+pm2 start dist/index.js --name sigsaho-api --max-memory-restart 500M --log-date-format 'YYYY-MM-DD HH:mm:ss'
+pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 100M
+pm2 set pm2-logrotate:retain 7
+```
+
+### Audit Log Retention
+
+Schedule periodic audit log archival:
+
+```sql
+-- Archive logs older than 90 days
+CREATE TABLE audit_logs_archive AS 
+SELECT * FROM audit_logs WHERE timestamp < NOW() - INTERVAL '90 days';
+
+DELETE FROM audit_logs WHERE timestamp < NOW() - INTERVAL '90 days';
+```
+
+### Database Backups
+
+Automate daily backups:
+
+```bash
+#!/bin/bash
+# Daily backup script
+BACKUP_DIR="/backups/sigsaho"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p $BACKUP_DIR
+docker exec db-postgres-servicio-hangar pg_dump -U postgres estadistica-hangar | gzip > "$BACKUP_DIR/backup_$DATE.sql.gz"
+
+# Keep only last 30 days
+find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +30 -delete
+```
+
+### Monitor Disk Usage
+
+```bash
+# Check Docker volume size
+docker system df -v | grep db_data_servicio_hangar
+
+# Check database size
+docker exec db-postgres-servicio-hangar psql -U postgres -c "SELECT pg_size_pretty(pg_database_size('estadistica-hangar'));"
+```

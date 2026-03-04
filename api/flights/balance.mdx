@@ -1,0 +1,641 @@
+---
+title: 'Weight & Balance'
+description: 'Create and manage aircraft weight and balance calculations with detailed load sheets'
+---
+
+## Create Flight Balance
+
+<Card title="POST /flight-balances" icon="plus">
+  Create a new weight and balance calculation for an aircraft flight.
+</Card>
+
+### Request Body
+
+#### Subtotals - Operating Empty Weight
+
+<ParamField body="subtotal_operating_empty_weight" type="number" required>
+  Operating empty weight in pounds
+  
+  Example: `2500.00`
+</ParamField>
+
+<ParamField body="subtotal_operating_empty_cg" type="number" required>
+  Center of gravity for operating empty weight in inches
+  
+  Example: `120.50`
+</ParamField>
+
+<ParamField body="subtotal_operating_empty_moment" type="number" required>
+  Moment for operating empty weight (weight × arm)
+  
+  Example: `301250.00`
+</ParamField>
+
+#### Subtotals - With Fuel
+
+<ParamField body="subtotal_operating_fuel_weight" type="number" required>
+  Operating weight with fuel in pounds
+  
+  Example: `3000.00`
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_cg" type="number" required>
+  Center of gravity with fuel in inches
+  
+  Example: `118.20`
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_moment" type="number" required>
+  Moment with fuel
+  
+  Example: `354600.00`
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_mac" type="number" required>
+  Mean Aerodynamic Chord percentage with fuel
+  
+  Example: `25.50`
+</ParamField>
+
+#### Totals - Takeoff
+
+<ParamField body="total_take_off_weight" type="number" required>
+  Total takeoff weight in pounds
+  
+  Example: `3500.00`
+</ParamField>
+
+<ParamField body="total_take_off_cg" type="number" required>
+  Center of gravity at takeoff
+  
+  Example: `119.00`
+</ParamField>
+
+<ParamField body="total_take_off_moment" type="number" required>
+  Total moment at takeoff
+  
+  Example: `416500.00`
+</ParamField>
+
+<ParamField body="total_take_off_mac" type="number" required>
+  MAC percentage at takeoff
+  
+  Example: `26.20`
+</ParamField>
+
+#### Totals - Landing
+
+<ParamField body="total_landing_weight" type="number" required>
+  Total landing weight in pounds
+  
+  Example: `3200.00`
+</ParamField>
+
+<ParamField body="total_landing_cg" type="number" required>
+  Center of gravity at landing
+  
+  Example: `118.50`
+</ParamField>
+
+<ParamField body="total_landing_moment" type="number" required>
+  Total moment at landing
+  
+  Example: `379200.00`
+</ParamField>
+
+<ParamField body="total_landing_mac" type="number" required>
+  MAC percentage at landing
+  
+  Example: `25.80`
+</ParamField>
+
+#### Relations
+
+<ParamField body="aircraft_id" type="integer" required>
+  ID of the aircraft
+</ParamField>
+
+<ParamField body="pilot_command_id" type="integer" required>
+  ID of the pilot in command
+</ParamField>
+
+<ParamField body="pilot_officer_id" type="integer">
+  ID of the first officer (optional)
+</ParamField>
+
+#### Load Sheet Details
+
+<ParamField body="details" type="array" required>
+  Array of load sheet items (passengers, cargo, fuel, etc.)
+  
+  <Expandable title="Detail Object">
+    <ParamField body="item" type="string" required>
+      Description of the load item
+      
+      Example: `Piloto Cmte.`, `Pasajero 1`, `Equipaje`
+    </ParamField>
+    
+    <ParamField body="weight" type="number" required>
+      Weight of the item in pounds
+      
+      Example: `85.00`
+    </ParamField>
+    
+    <ParamField body="cg" type="number" required>
+      Center of gravity position (arm) in inches
+      
+      Example: `45.50`
+    </ParamField>
+    
+    <ParamField body="moment" type="number" required>
+      Calculated moment (weight × arm)
+      
+      Example: `3867.50`
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="flightBalance" type="object">
+  The created flight balance object with all calculations
+</ResponseField>
+
+### Example Request
+
+```bash
+curl -X POST https://api.sigsaho.com/flight-balances \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "subtotal_operating_empty_weight": 2500.00,
+    "subtotal_operating_empty_cg": 120.50,
+    "subtotal_operating_empty_moment": 301250.00,
+    "subtotal_operating_fuel_weight": 3000.00,
+    "subtotal_operating_fuel_cg": 118.20,
+    "subtotal_operating_fuel_moment": 354600.00,
+    "subtotal_operating_fuel_mac": 25.50,
+    "total_take_off_weight": 3500.00,
+    "total_take_off_cg": 119.00,
+    "total_take_off_moment": 416500.00,
+    "total_take_off_mac": 26.20,
+    "total_landing_weight": 3200.00,
+    "total_landing_cg": 118.50,
+    "total_landing_moment": 379200.00,
+    "total_landing_mac": 25.80,
+    "aircraft_id": 1,
+    "pilot_command_id": 2,
+    "pilot_officer_id": 3,
+    "details": [
+      {
+        "item": "Piloto Cmte.",
+        "weight": 85.00,
+        "cg": 45.50,
+        "moment": 3867.50
+      },
+      {
+        "item": "Primer Oficial",
+        "weight": 80.00,
+        "cg": 45.50,
+        "moment": 3640.00
+      },
+      {
+        "item": "Pasajero 1",
+        "weight": 75.00,
+        "cg": 120.00,
+        "moment": 9000.00
+      }
+    ]
+  }'
+```
+
+---
+
+## List Flight Balances
+
+<Card title="GET /flight-balances" icon="list">
+  Retrieve a paginated list of weight and balance calculations with filters.
+</Card>
+
+### Query Parameters
+
+<ParamField query="page" type="integer" default="1">
+  Page number for pagination
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Number of records per page (max: 100)
+</ParamField>
+
+<ParamField query="aircraft_id" type="integer">
+  Filter by aircraft ID
+</ParamField>
+
+<ParamField query="registered_by_id" type="integer">
+  Filter by user who registered the calculation
+</ParamField>
+
+<ParamField query="pilot_command_id" type="integer">
+  Filter by pilot in command ID
+</ParamField>
+
+<ParamField query="date_from" type="string">
+  Filter calculations from this date (YYYY-MM-DD)
+</ParamField>
+
+<ParamField query="date_to" type="string">
+  Filter calculations until this date (YYYY-MM-DD)
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sigsaho.com/flight-balances?page=1&limit=20&aircraft_id=1" \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Get Flight Balance by ID
+
+<Card title="GET /flight-balances/:id" icon="file">
+  Retrieve detailed information about a specific weight and balance calculation.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Flight balance calculation ID
+</ParamField>
+
+### Response
+
+<ResponseField name="flightBalance" type="object">
+  Complete flight balance object including all calculations and details
+  
+  <Expandable title="Flight Balance Object">
+    <ResponseField name="id" type="number">
+      Unique identifier
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_empty_weight" type="number">
+      Operating empty weight
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_empty_cg" type="number">
+      Operating empty CG
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_empty_moment" type="number">
+      Operating empty moment
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_fuel_weight" type="number">
+      Operating weight with fuel
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_fuel_cg" type="number">
+      Operating CG with fuel
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_fuel_moment" type="number">
+      Operating moment with fuel
+    </ResponseField>
+    
+    <ResponseField name="subtotal_operating_fuel_mac" type="number">
+      Operating MAC with fuel
+    </ResponseField>
+    
+    <ResponseField name="total_take_off_weight" type="number">
+      Total takeoff weight
+    </ResponseField>
+    
+    <ResponseField name="total_take_off_cg" type="number">
+      Takeoff CG
+    </ResponseField>
+    
+    <ResponseField name="total_take_off_moment" type="number">
+      Takeoff moment
+    </ResponseField>
+    
+    <ResponseField name="total_take_off_mac" type="number">
+      Takeoff MAC
+    </ResponseField>
+    
+    <ResponseField name="total_landing_weight" type="number">
+      Total landing weight
+    </ResponseField>
+    
+    <ResponseField name="total_landing_cg" type="number">
+      Landing CG
+    </ResponseField>
+    
+    <ResponseField name="total_landing_moment" type="number">
+      Landing moment
+    </ResponseField>
+    
+    <ResponseField name="total_landing_mac" type="number">
+      Landing MAC
+    </ResponseField>
+    
+    <ResponseField name="details" type="array">
+      Array of load sheet detail items
+    </ResponseField>
+    
+    <ResponseField name="aircraft" type="object">
+      Aircraft information
+    </ResponseField>
+    
+    <ResponseField name="pilot_command" type="object">
+      Pilot in command information
+    </ResponseField>
+    
+    <ResponseField name="pilot_officer" type="object">
+      First officer information (if applicable)
+    </ResponseField>
+    
+    <ResponseField name="registered_by" type="object">
+      User who created the calculation
+    </ResponseField>
+    
+    <ResponseField name="created_at" type="string">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="updated_at" type="string">
+      Last update timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example Request
+
+```bash
+curl -X GET https://api.sigsaho.com/flight-balances/123 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Get Balances by Aircraft
+
+<Card title="GET /flight-balances/aircraft/:aircraftId" icon="plane">
+  Retrieve all weight and balance calculations for a specific aircraft.
+</Card>
+
+### Path Parameters
+
+<ParamField path="aircraftId" type="integer" required>
+  Aircraft ID
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="page" type="integer" default="1">
+  Page number
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Records per page
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X GET "https://api.sigsaho.com/flight-balances/aircraft/1?page=1&limit=10" \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Get Aircraft Statistics
+
+<Card title="GET /flight-balances/stats/aircraft/:aircraftId" icon="chart-line">
+  Retrieve statistical data for weight and balance calculations of a specific aircraft.
+</Card>
+
+### Path Parameters
+
+<ParamField path="aircraftId" type="integer" required>
+  Aircraft ID
+</ParamField>
+
+### Response
+
+<ResponseField name="stats" type="object">
+  Statistical information
+  
+  <Expandable title="Stats Object">
+    <ResponseField name="totalCalculations" type="number">
+      Total number of calculations for this aircraft
+    </ResponseField>
+    
+    <ResponseField name="avgTakeOffWeight" type="number">
+      Average takeoff weight
+    </ResponseField>
+    
+    <ResponseField name="avgLandingWeight" type="number">
+      Average landing weight
+    </ResponseField>
+    
+    <ResponseField name="lastCalculation" type="string">
+      Timestamp of the most recent calculation
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example Request
+
+```bash
+curl -X GET https://api.sigsaho.com/flight-balances/stats/aircraft/1 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Update Flight Balance
+
+<Card title="PATCH /flight-balances/:id" icon="pen">
+  Partially update an existing weight and balance calculation.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Flight balance calculation ID
+</ParamField>
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated. If `details` is provided, all existing details will be replaced.
+
+<ParamField body="subtotal_operating_empty_weight" type="number">
+  Operating empty weight
+</ParamField>
+
+<ParamField body="subtotal_operating_empty_cg" type="number">
+  Operating empty CG
+</ParamField>
+
+<ParamField body="subtotal_operating_empty_moment" type="number">
+  Operating empty moment
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_weight" type="number">
+  Operating weight with fuel
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_cg" type="number">
+  Operating CG with fuel
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_moment" type="number">
+  Operating moment with fuel
+</ParamField>
+
+<ParamField body="subtotal_operating_fuel_mac" type="number">
+  Operating MAC with fuel
+</ParamField>
+
+<ParamField body="total_take_off_weight" type="number">
+  Total takeoff weight
+</ParamField>
+
+<ParamField body="total_take_off_cg" type="number">
+  Takeoff CG
+</ParamField>
+
+<ParamField body="total_take_off_moment" type="number">
+  Takeoff moment
+</ParamField>
+
+<ParamField body="total_take_off_mac" type="number">
+  Takeoff MAC
+</ParamField>
+
+<ParamField body="total_landing_weight" type="number">
+  Total landing weight
+</ParamField>
+
+<ParamField body="total_landing_cg" type="number">
+  Landing CG
+</ParamField>
+
+<ParamField body="total_landing_moment" type="number">
+  Landing moment
+</ParamField>
+
+<ParamField body="total_landing_mac" type="number">
+  Landing MAC
+</ParamField>
+
+<ParamField body="aircraft_id" type="integer">
+  Aircraft ID
+</ParamField>
+
+<ParamField body="pilot_command_id" type="integer">
+  Pilot in command ID
+</ParamField>
+
+<ParamField body="pilot_officer_id" type="integer">
+  First officer ID
+</ParamField>
+
+<ParamField body="details" type="array">
+  Load sheet details (replaces all existing details if provided)
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X PATCH https://api.sigsaho.com/flight-balances/123 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: token=your-jwt-token" \
+  -d '{
+    "total_take_off_weight": 3600.00,
+    "total_take_off_cg": 119.50
+  }'
+```
+
+---
+
+## Delete Flight Balance
+
+<Card title="DELETE /flight-balances/:id" icon="trash">
+  Delete a weight and balance calculation and all its associated details.
+</Card>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  Flight balance calculation ID
+</ParamField>
+
+### Example Request
+
+```bash
+curl -X DELETE https://api.sigsaho.com/flight-balances/123 \
+  -H "Cookie: token=your-jwt-token"
+```
+
+---
+
+## Error Responses
+
+### 400 Bad Request
+Returned when validation fails or invalid data is provided.
+
+```json
+{
+  "error": "ID invalido"
+}
+```
+
+### 401 Unauthorized
+Returned when authentication fails or user lacks required permissions.
+
+```json
+{
+  "error": "Usuario no autenticado"
+}
+```
+
+### 404 Not Found
+Returned when the requested calculation is not found.
+
+```json
+{
+  "error": "Calculo de peso y balance no encontrado"
+}
+```
+
+---
+
+## Understanding Weight & Balance
+
+### Key Concepts
+
+**Center of Gravity (CG)**: The point where the aircraft would balance if suspended. Must be within manufacturer-specified limits for safe flight.
+
+**Moment**: The product of weight and arm (distance from datum). Used to calculate CG position.
+
+**MAC (Mean Aerodynamic Chord)**: The average chord of the wing, expressed as a percentage. CG limits are often specified as % MAC.
+
+### Calculation Flow
+
+1. **Operating Empty Weight**: Base aircraft weight without fuel or payload
+2. **Operating with Fuel**: Add fuel weight and recalculate CG
+3. **Takeoff**: Add all passengers, cargo, and calculate final takeoff CG
+4. **Landing**: Account for fuel burn to verify landing weight and CG are within limits
+
+### Safety Considerations
+
+Weight and balance calculations are critical for:
+- Ensuring the aircraft operates within structural limits
+- Maintaining controllability throughout the flight
+- Optimizing aircraft performance
+- Meeting regulatory requirements

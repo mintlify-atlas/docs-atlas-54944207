@@ -1,0 +1,546 @@
+---
+title: Dispatch
+description: Manage aircraft dispatch operations, track flight records, and oversee maintenance scheduling
+---
+
+The Dispatch module serves as the operational command center for aircraft operations, providing comprehensive tools for flight dispatch, aircraft status monitoring, and maintenance coordination.
+
+## Overview
+
+Dispatch integrates multiple operational functions into a unified workflow:
+
+<CardGroup cols={2}>
+  <Card title="Aircraft Dispatch" icon="plane-departure">
+    Monitor fleet status and dispatch aircraft to missions
+  </Card>
+  <Card title="Flight Records" icon="book">
+    Maintain comprehensive flight logbooks and history
+  </Card>
+  <Card title="Maintenance Coordination" icon="wrench">
+    Schedule and track maintenance services
+  </Card>
+  <Card title="Parts Inventory" icon="boxes">
+    Manage aircraft parts and component tracking
+  </Card>
+</CardGroup>
+
+## Aircraft Dispatch Dashboard
+
+The dispatch dashboard provides real-time fleet status and operational readiness.
+
+### Dashboard Components
+
+**Fleet Status Cards**
+- Total aircraft count
+- Aircraft available for dispatch
+- Aircraft in maintenance
+- Aircraft out of service
+
+**Key Performance Indicators**
+- Total fleet flight hours
+- Average aircraft utilization
+- Maintenance compliance percentage
+- Upcoming service requirements
+
+**Quick Actions**
+- Dispatch aircraft to mission
+- Record flight completion
+- Schedule maintenance
+- Update aircraft status
+
+### Viewing Aircraft Status
+
+The dispatch table displays all aircraft with critical information:
+
+- **Registration**: Aircraft registration number
+- **Aircraft Name**: Friendly identifier
+- **Status**: Current operational status
+- **Available Hours**: Flight hours remaining before maintenance
+- **Current Hours**: Total accumulated flight time
+- **Last Flight**: Date of most recent flight
+- **Maintenance Due**: Percentage toward next maintenance
+- **Actions**: Quick access to operations
+
+### Filtering the Fleet
+
+Quickly find aircraft using filters:
+
+- **Status Filter**: View only Active, In Maintenance, or Out of Service aircraft
+- **Category Filter**: Filter by Rotary Wing or Fixed Wing
+- **Availability Filter**: Show only aircraft available for dispatch
+- **Search**: Search by registration or name
+- **Sort**: Sort by any column (hours, maintenance due, etc.)
+
+## Dispatching Aircraft
+
+### Pre-Dispatch Checklist
+
+Before dispatching an aircraft, verify:
+
+<Steps>
+  <Step title="Aircraft Status">
+    Confirm the aircraft status is "Active" and available.
+  </Step>
+  <Step title="Flight Hours">
+    Check that sufficient flight hours are available before maintenance is due.
+  </Step>
+  <Step title="Crew Availability">
+    Verify qualified crew members are available and current on certifications.
+  </Step>
+  <Step title="Weather Conditions">
+    Review weather at origin, destination, and along the route.
+  </Step>
+  <Step title="Weight and Balance">
+    Calculate or verify weight and balance for the mission loading.
+  </Step>
+  <Step title="Documentation">
+    Ensure all required aircraft documents are current and onboard.
+  </Step>
+</Steps>
+
+### Dispatch Process
+
+<Steps>
+  <Step title="Select Aircraft">
+    From the dispatch dashboard, select the aircraft to dispatch.
+  </Step>
+  <Step title="Assign Mission">
+    Link the aircraft to a flight transfer or mission:
+    - Select from existing pending transfers
+    - Or create a new transfer record
+  </Step>
+  <Step title="Assign Crew">
+    Select the crew members for the mission:
+    - Pilot in Command (required)
+    - First Officer (if applicable)
+    - Additional crew as needed
+  </Step>
+  <Step title="Verify Readiness">
+    Final checks before dispatch:
+    - Weight and balance completed
+    - Weather briefing obtained
+    - All crew qualified and current
+    - Aircraft inspected and fueled
+  </Step>
+  <Step title="Authorize Dispatch">
+    Click "Dispatch" to authorize the aircraft for the mission.
+  </Step>
+</Steps>
+
+<Note>
+Dispatch authorization updates the aircraft status and creates an audit trail for operational tracking.
+</Note>
+
+## Flight Records Management
+
+Maintain comprehensive flight records and logbooks for each aircraft.
+
+### Flight Records Table
+
+The flight records section displays detailed flight history:
+
+**Flight Information**
+- Flight date and time
+- Flight number or reference
+- Origin and destination
+- Flight time (hours and minutes)
+
+**Engine and Cycle Data**
+- Engine hours (for each engine)
+- Cycles completed
+- Cumulative totals
+
+**Crew Information**
+- Pilot in Command
+- First Officer
+- Additional crew
+
+**Operational Data**
+- Fuel consumed
+- Passengers carried
+- Cargo weight
+- Logbook folio number
+
+### Adding a Flight Record
+
+Manually add a flight record if not auto-created from transfer:
+
+<Steps>
+  <Step title="Open Flight Records">
+    Navigate to the aircraft's flight records section.
+  </Step>
+  <Step title="Add New Record">
+    Click "Add Flight Record" to open the entry form.
+  </Step>
+  <Step title="Enter Flight Details">
+    Fill in all required flight information:
+    - Date and time of flight
+    - Origin and destination
+    - Flight time (in decimal hours or hours:minutes)
+  </Step>
+  <Step title="Record Engine Data">
+    Enter engine-specific information:
+    - Hours for each engine
+    - Cycles completed
+  </Step>
+  <Step title="Add Crew Information">
+    Assign crew members who operated the flight.
+  </Step>
+  <Step title="Include Operational Data">
+    Record fuel, passengers, and cargo details.
+  </Step>
+  <Step title="Save Record">
+    Save the flight record. The system automatically:
+    - Updates aircraft total hours
+    - Updates maintenance calculations
+    - Adds to crew member flight logs
+  </Step>
+</Steps>
+
+### Flight Hours Calculation
+
+The system automatically maintains cumulative flight data:
+
+- **Individual Flight Hours**: Time for each specific flight
+- **Cumulative Hours**: Running total of all flight time
+- **Hours Since Maintenance**: Time accumulated since last major service
+- **Available Hours**: Remaining time before next maintenance due
+
+<Warning>
+Flight hours directly impact maintenance scheduling. Always ensure flight records are accurate and entered promptly after each flight.
+</Warning>
+
+## Services and Inspections
+
+Manage scheduled and unscheduled maintenance services.
+
+### Service Types
+
+The system tracks various maintenance categories:
+
+- **Scheduled Maintenance**: Time-based or hour-based recurring services
+- **Inspections**: Required regulatory inspections (100-hour, annual, etc.)
+- **Repairs**: Unscheduled maintenance and repairs
+- **Modifications**: Aircraft modifications and upgrades
+- **Special Inspections**: Event-driven inspections (hard landing, overspeed, etc.)
+
+### Scheduling a Service
+
+<Steps>
+  <Step title="Access Services">
+    Navigate to Dispatch > Services and Inspections.
+  </Step>
+  <Step title="Create New Service">
+    Click "Schedule Service" to open the service form.
+  </Step>
+  <Step title="Select Aircraft">
+    Choose the aircraft requiring service.
+  </Step>
+  <Step title="Define Service Type">
+    Select the service type and provide detailed description.
+  </Step>
+  <Step title="Set Schedule">
+    Schedule the service based on:
+    - **Date**: Calendar date for service
+    - **Flight Hours**: When aircraft reaches specific hours
+    - **Both**: Whichever comes first
+  </Step>
+  <Step title="Add Service Details">
+    Include additional information:
+    - Service provider or technician
+    - Estimated duration
+    - Required parts
+    - Cost estimate
+  </Step>
+  <Step title="Configure Notifications">
+    Set up automatic notifications:
+    - Email addresses to notify
+    - Phone numbers for SMS alerts
+    - Advance notice period (e.g., 7 days before due)
+  </Step>
+  <Step title="Save Service">
+    Save the service record. It appears in the services table with status "Pending."
+  </Step>
+</Steps>
+
+### Service Status Workflow
+
+Services progress through several status states:
+
+**Pending**: Service scheduled but not yet due
+**Due**: Service is now due or aircraft has reached specified hours
+**In Progress**: Service work has begun
+**Completed**: Service finished and signed off
+**Cancelled**: Service cancelled or no longer required
+
+### Completing a Service
+
+<Steps>
+  <Step title="Locate Service Record">
+    Find the service in the services table.
+  </Step>
+  <Step title="Open Service Details">
+    Click on the service to view full details.
+  </Step>
+  <Step title="Complete Service">
+    Click "Complete Service" to open the completion form.
+  </Step>
+  <Step title="Record Completion Details">
+    Enter completion information:
+    - Actual completion date
+    - Work performed
+    - Parts used
+    - Technician signature
+    - Discrepancies found and resolved
+  </Step>
+  <Step title="Upload Documentation">
+    Attach service documentation:
+    - Work orders
+    - Maintenance logs
+    - Parts certificates
+    - Sign-off sheets
+  </Step>
+  <Step title="Return to Service">
+    If service required grounding the aircraft:
+    - Mark aircraft as returned to service
+    - Update aircraft status to "Active"
+    - Record return to service authorization
+  </Step>
+  <Step title="Save Completion">
+    Finalize the service record. The system:
+    - Updates service status to "Completed"
+    - Updates aircraft maintenance history
+    - Recalculates maintenance due percentages
+    - Archives service documentation
+  </Step>
+</Steps>
+
+### Service Notifications
+
+The system automatically sends notifications when:
+
+- Service is approaching due date (configurable advance notice)
+- Service is now due
+- Service is overdue
+- Service is completed
+
+Notifications can be sent via:
+- In-system notifications
+- Email
+- SMS (if configured)
+
+## Parts and Inventory Management
+
+Track aircraft parts, components, and inventory.
+
+### Inventory Categories
+
+- **Life-Limited Parts**: Components with time or cycle limits
+- **Consumables**: Fluids, filters, and consumable items
+- **Rotables**: Repairable components that rotate through service
+- **Expendables**: Single-use parts
+- **Tools and Equipment**: Maintenance tools and ground equipment
+
+### Inventory Table Features
+
+The inventory management table includes:
+
+**Part Information**
+- Part number and serial number
+- Part name and description
+- Manufacturer
+- Category
+
+**Status Tracking**
+- Current status (Serviceable, Unserviceable, Installed, In Repair)
+- Location (aircraft, warehouse, shop)
+- Quantity on hand
+
+**Lifecycle Data**
+- Installation date (for installed parts)
+- Time since installation
+- Time/cycles remaining
+- Next inspection due
+
+**Documentation**
+- Certificates of conformity
+- Test reports
+- Maintenance records
+
+### Adding Inventory Items
+
+<Steps>
+  <Step title="Access Inventory">
+    Navigate to Dispatch > Components (Inventory).
+  </Step>
+  <Step title="Add New Part">
+    Click "Add Component" to open the entry form.
+  </Step>
+  <Step title="Enter Part Details">
+    Fill in part identification:
+    - Part number
+    - Serial number (if serialized)
+    - Part name and description
+    - Manufacturer
+  </Step>
+  <Step title="Set Category and Limits">
+    Specify:
+    - Part category
+    - Time limits (hours or calendar)
+    - Cycle limits (if applicable)
+    - Shelf life (if applicable)
+  </Step>
+  <Step title="Record Quantity and Location">
+    Enter:
+    - Quantity on hand
+    - Storage location
+    - Reorder point (minimum quantity)
+  </Step>
+  <Step title="Upload Certifications">
+    Attach required documentation:
+    - FAA 8130-3 or equivalent
+    - Test reports
+    - Manufacturer certificates
+  </Step>
+  <Step title="Save Inventory Item">
+    Save to add the part to inventory.
+  </Step>
+</Steps>
+
+### Tracking Installed Parts
+
+When installing a part on an aircraft:
+
+<Steps>
+  <Step title="Locate Part in Inventory">
+    Find the part to be installed.
+  </Step>
+  <Step title="Record Installation">
+    Click "Install Part" and select:
+    - Aircraft where installed
+    - Installation date
+    - Aircraft hours at installation
+    - Installed by (technician)
+  </Step>
+  <Step title="Update Status">
+    Part status changes to "Installed" and is linked to the aircraft.
+  </Step>
+  <Step title="Set Removal Schedule">
+    System calculates removal due date based on:
+    - Part time limits
+    - Current aircraft hours
+    - Calendar limits
+  </Step>
+</Steps>
+
+### Inventory Alerts
+
+Receive automatic alerts for:
+
+- Parts approaching time/cycle limits
+- Low inventory (below reorder point)
+- Expired shelf-life items
+- Required inspections due
+- Parts reaching calendar limits
+
+## Operational Reports
+
+Generate dispatch and maintenance reports:
+
+### Available Reports
+
+- **Fleet Status Report**: Snapshot of entire fleet operational status
+- **Flight Hours Summary**: Total hours by aircraft and time period
+- **Maintenance Compliance**: Percentage of services completed on time
+- **Aircraft Utilization**: Usage rates and availability metrics
+- **Parts Consumption**: Parts usage trends and costs
+- **Crew Utilization**: Hours flown per crew member
+
+### Generating Reports
+
+<Steps>
+  <Step title="Navigate to Reports">
+    Access the Reports section from the Dispatch module.
+  </Step>
+  <Step title="Select Report Type">
+    Choose the report you need from the available options.
+  </Step>
+  <Step title="Set Parameters">
+    Define report parameters:
+    - Date range
+    - Aircraft filter (specific aircraft or all)
+    - Additional filters (status, service type, etc.)
+  </Step>
+  <Step title="Generate Report">
+    Click "Generate" to create the report.
+  </Step>
+  <Step title="Review Results">
+    Review the report on screen.
+  </Step>
+  <Step title="Export Report">
+    Export in your preferred format:
+    - PDF for official records
+    - Excel for data analysis
+    - CSV for integration with other systems
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Daily Fleet Status Review">
+    Review fleet status every morning before operations begin. Verify aircraft availability, pending maintenance, and crew readiness.
+  </Accordion>
+  
+  <Accordion title="Accurate Flight Record Entry">
+    Enter flight records immediately after each flight while details are fresh. Accurate records are critical for maintenance scheduling.
+  </Accordion>
+  
+  <Accordion title="Proactive Maintenance Scheduling">
+    Schedule maintenance services well in advance. Don't wait until services are overdue, which can ground aircraft unexpectedly.
+  </Accordion>
+  
+  <Accordion title="Parts Inventory Management">
+    Maintain adequate inventory of critical parts. Track usage patterns and adjust reorder points to prevent stock-outs.
+  </Accordion>
+  
+  <Accordion title="Documentation Discipline">
+    Always attach supporting documentation to service records. This creates a complete audit trail for compliance and resale value.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Aircraft Shows In Maintenance But No Active Service">
+    Check if there's a pending service record that wasn't completed or cancelled. Update the service status to return the aircraft to active status.
+  </Accordion>
+  
+  <Accordion title="Flight Hours Not Updating After Recording Flight">
+    Verify that the flight record was saved successfully. Check that the flight time was entered in the correct format (decimal hours). If the issue persists, contact support.
+  </Accordion>
+  
+  <Accordion title="Maintenance Percentage Showing Incorrect Value">
+    The maintenance percentage is calculated based on hours since last major maintenance. Verify that:
+    - Last major maintenance date is correct in aircraft profile
+    - Hours before last maintenance is accurate
+    - Total lifetime hours is set correctly
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Aircraft Management" icon="plane" href="/features/aircraft-management">
+    Manage aircraft fleet and registrations
+  </Card>
+  <Card title="Flight Operations" icon="plane-departure" href="/features/flight-operations">
+    Record and manage flight missions
+  </Card>
+  <Card title="Service Tracking" icon="clipboard-check" href="/features/service-tracking">
+    Detailed service and maintenance tracking
+  </Card>
+  <Card title="Air Traffic Control" icon="tower-control" href="/features/air-traffic-control">
+    Weather and weight & balance tools
+  </Card>
+</CardGroup>

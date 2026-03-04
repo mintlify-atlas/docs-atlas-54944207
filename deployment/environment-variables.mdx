@@ -1,0 +1,652 @@
+---
+title: Environment Variables
+description: Complete reference of all environment variables used in SIGSAHO backend and frontend
+---
+
+## Overview
+
+SIGSAHO uses environment variables to configure the application for different environments. This page provides a complete reference of all available environment variables.
+
+<Warning>
+  **Security Notice**: Never commit `.env` files containing production credentials to version control. Use `.env.example` as a template only.
+</Warning>
+
+## Backend Environment Variables
+
+All backend environment variables are defined in `back/.env.example` and loaded via `back/src/config/config.ts`.
+
+### Database Configuration
+
+<ParamField path="POSTGRES_DB" type="string" default="estadistica-hangar" required>
+  PostgreSQL database name.
+  
+  ```bash
+  POSTGRES_DB=estadistica-hangar
+  ```
+  
+  The database must be created before starting the application.
+</ParamField>
+
+<ParamField path="DB_PORT" type="number" default="5432" required>
+  PostgreSQL server port.
+  
+  ```bash
+  DB_PORT=5432
+  ```
+</ParamField>
+
+<ParamField path="DB_HOST" type="string" default="localhost" required>
+  PostgreSQL server hostname or IP address.
+  
+  ```bash
+  DB_HOST=localhost
+  ```
+  
+  **Examples**:
+  - Development: `localhost`
+  - Docker: Service name (e.g., `postgres`)
+  - Production: Database server IP or domain
+</ParamField>
+
+<ParamField path="POSTGRES_USER" type="string" default="postgres" required>
+  PostgreSQL username for authentication.
+  
+  ```bash
+  POSTGRES_USER=postgres
+  ```
+</ParamField>
+
+<ParamField path="POSTGRES_PASSWORD" type="string" default="1234" required>
+  PostgreSQL password for authentication.
+  
+  ```bash
+  POSTGRES_PASSWORD=1234
+  ```
+  
+  <Warning>
+    Use a strong password in production, never use default values like "1234".
+  </Warning>
+</ParamField>
+
+### Server Configuration
+
+<ParamField path="PORT" type="number" default="3001" required>
+  Port number on which the backend HTTP server listens.
+  
+  ```bash
+  PORT=3001
+  ```
+  
+  Ensure this port is available and not blocked by firewall.
+</ParamField>
+
+<ParamField path="NODE_ENV" type="string" default="development" required>
+  Application environment mode.
+  
+  ```bash
+  NODE_ENV=development  # or 'production'
+  ```
+  
+  **Effects**:
+  - `development`: Local file storage, verbose logging, CORS=*
+  - `production`: S3 storage, secure cookies, strict CORS
+  
+  <Warning>
+    Always set `NODE_ENV=production` in production environments to enable security features.
+  </Warning>
+</ParamField>
+
+### Database Synchronization
+
+<ParamField path="API_DB_SYNC" type="boolean" default="true">
+  Enable TypeORM automatic database schema synchronization.
+  
+  ```bash
+  API_DB_SYNC=true   # Development only
+  API_DB_SYNC=false  # Production (use migrations)
+  ```
+  
+  <Warning>
+    **Never enable in production!** This can cause data loss. Use migrations instead.
+  </Warning>
+  
+  When `true`, TypeORM automatically synchronizes entity definitions with the database schema on startup. This is convenient for development but dangerous in production.
+</ParamField>
+
+<ParamField path="SEED_TEST_DATA" type="boolean" default="false">
+  Generate test data (transfers) on application startup.
+  
+  ```bash
+  # SEED_TEST_DATA=true
+  ```
+  
+  <Warning>
+    Development only. Do not enable in production as it will populate the database with fake data.
+  </Warning>
+  
+  Uncomment this line during development to automatically seed the database with sample data for testing.
+</ParamField>
+
+<ParamField path="API_IS_PROD" type="boolean" default="false">
+  Flag to indicate production environment.
+  
+  ```bash
+  API_IS_PROD=false  # Development
+  API_IS_PROD=true   # Production
+  ```
+  
+  This may control additional production-specific behaviors not covered by `NODE_ENV`.
+</ParamField>
+
+### Security & Authentication
+
+<ParamField path="TOKEN_SECRET" type="string" default="1234-my-secret-token" required>
+  Secret key used for signing and verifying JWT tokens.
+  
+  ```bash
+  TOKEN_SECRET=1234-my-secret-token
+  ```
+  
+  <Warning>
+    **Critical**: In production, use a strong, randomly generated secret (minimum 32 characters). Never use the default value.
+  </Warning>
+  
+  **Generate a secure secret**:
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  ```
+</ParamField>
+
+<ParamField path="SECRET_PASSWORD_ENCRYPT" type="string" default="password1234" required>
+  Secret key used for password encryption and hashing.
+  
+  ```bash
+  SECRET_PASSWORD_ENCRYPT=password1234
+  ```
+  
+  <Warning>
+    **Critical**: In production, use a strong, randomly generated secret. Never use the default value.
+  </Warning>
+</ParamField>
+
+<ParamField path="CORS_ORIGIN" type="string" default="*" required>
+  Allowed CORS (Cross-Origin Resource Sharing) origins.
+  
+  ```bash
+  # Development
+  CORS_ORIGIN=*
+  
+  # Production (single origin)
+  CORS_ORIGIN=https://yourdomain.com
+  
+  # Production (multiple origins)
+  CORS_ORIGIN=https://yourdomain.com,https://app.yourdomain.com
+  ```
+  
+  <Warning>
+    **Never use `*` in production!** Always specify exact allowed origins for security.
+  </Warning>
+</ParamField>
+
+### JWT Token Configuration
+
+<ParamField path="JWT_ACCESS_TOKEN_EXPIRY" type="string" default="15m">
+  Access token expiration time.
+  
+  ```bash
+  JWT_ACCESS_TOKEN_EXPIRY=15m
+  ```
+  
+  **Supported formats**:
+  - Seconds: `60`, `120`
+  - Minutes: `15m`, `30m`
+  - Hours: `1h`, `2h`
+  - Days: `1d`, `7d`
+  
+  **Recommended**: 15-30 minutes for security
+</ParamField>
+
+<ParamField path="JWT_REFRESH_TOKEN_EXPIRY_DAYS" type="number" default="7">
+  Refresh token expiration in days.
+  
+  ```bash
+  JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
+  ```
+  
+  **Recommended**: 7-30 days
+</ParamField>
+
+### File Upload Configuration
+
+<ParamField path="UPLOAD_MAX_SIZE" type="number" default="10485760">
+  Maximum allowed file upload size in bytes.
+  
+  ```bash
+  UPLOAD_MAX_SIZE=10485760  # 10MB
+  ```
+  
+  **Common sizes**:
+  - 5MB: `5242880`
+  - 10MB: `10485760`
+  - 50MB: `52428800`
+  - 100MB: `104857600`
+</ParamField>
+
+<ParamField path="UPLOADS_DIR" type="string" default="uploads">
+  Directory path for local file storage (used when `NODE_ENV=development`).
+  
+  ```bash
+  UPLOADS_DIR=uploads
+  ```
+  
+  This directory will be created automatically if it doesn't exist.
+</ParamField>
+
+### AWS S3 Configuration
+
+<Info>
+  AWS S3 configuration is only used when `NODE_ENV=production`. In development mode, files are stored locally in `UPLOADS_DIR`.
+</Info>
+
+<ParamField path="AWS_ACCESS_KEY_ID" type="string">
+  AWS IAM access key ID for S3 authentication.
+  
+  ```bash
+  AWS_ACCESS_KEY_ID=your_access_key
+  ```
+  
+  <Warning>
+    Keep this secret secure. Never commit to version control.
+  </Warning>
+</ParamField>
+
+<ParamField path="AWS_SECRET_ACCESS_KEY" type="string">
+  AWS IAM secret access key for S3 authentication.
+  
+  ```bash
+  AWS_SECRET_ACCESS_KEY=your_secret_key
+  ```
+  
+  <Warning>
+    Keep this secret secure. Never commit to version control.
+  </Warning>
+</ParamField>
+
+<ParamField path="AWS_REGION" type="string" default="us-east-1">
+  AWS region where your S3 bucket is located.
+  
+  ```bash
+  AWS_REGION=us-east-1
+  ```
+  
+  **Common regions**:
+  - US East (N. Virginia): `us-east-1`
+  - US West (Oregon): `us-west-2`
+  - EU (Ireland): `eu-west-1`
+  - Asia Pacific (Tokyo): `ap-northeast-1`
+</ParamField>
+
+<ParamField path="S3_BUCKET_NAME" type="string">
+  Name of the S3 bucket for file storage.
+  
+  ```bash
+  S3_BUCKET_NAME=your-bucket-name
+  ```
+  
+  The bucket must:
+  - Already exist in your AWS account
+  - Have appropriate permissions configured
+  - Match the specified AWS region
+</ParamField>
+
+### External API Configuration
+
+#### NMS API
+
+<ParamField path="NMS_API_KEY" type="string">
+  API key for NMS (Navigation Management System) authentication.
+  
+  ```bash
+  NMS_API_KEY=
+  ```
+  
+  Leave empty if not using NMS integration.
+</ParamField>
+
+<ParamField path="NMS_API_SECRET" type="string">
+  API secret for NMS authentication.
+  
+  ```bash
+  NMS_API_SECRET=
+  ```
+  
+  Leave empty if not using NMS integration.
+</ParamField>
+
+<ParamField path="NMS_API_URL" type="string">
+  Base URL for the NMS API.
+  
+  ```bash
+  NMS_API_URL=
+  ```
+  
+  Example: `https://api.nms.example.com/v1`
+</ParamField>
+
+<ParamField path="NMS_API_URL_AUTH" type="string">
+  Authentication endpoint URL for the NMS API.
+  
+  ```bash
+  NMS_API_URL_AUTH=
+  ```
+  
+  Example: `https://auth.nms.example.com/token`
+</ParamField>
+
+#### Aviation Weather Center (AWC) API
+
+<ParamField path="AWC_API_URL" type="string" default="https://aviationweather.gov/api/data">
+  Base URL for the Aviation Weather Center API.
+  
+  ```bash
+  AWC_API_URL=https://aviationweather.gov/api/data
+  ```
+  
+  This is a public API that provides aviation weather data (METARs, TAFs, etc.).
+</ParamField>
+
+## Frontend Environment Variables
+
+The frontend uses Vite's environment variable system. All variables must be prefixed with `VITE_` to be exposed to the client.
+
+<ParamField path="VITE_API_URL" type="string" required>
+  Backend API base URL.
+  
+  ```bash
+  # Development
+  VITE_API_URL=http://localhost:3001/api/v1
+  
+  # Production
+  VITE_API_URL=https://api.yourdomain.com/api/v1
+  ```
+  
+  <Warning>
+    Ensure this URL matches your backend server address and includes the API version path.
+  </Warning>
+</ParamField>
+
+## Environment File Examples
+
+### Development Environment
+
+```bash .env (Development)
+# Database
+POSTGRES_DB=estadistica-hangar
+DB_PORT=5432
+DB_HOST=localhost
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=1234
+
+# Server
+PORT=3001
+NODE_ENV=development
+
+# Database Sync (Development only)
+API_DB_SYNC=true
+SEED_TEST_DATA=true
+
+# API
+API_IS_PROD=false
+
+# Security (Development values)
+TOKEN_SECRET=dev-secret-token-change-in-production
+SECRET_PASSWORD_ENCRYPT=dev-password-secret
+CORS_ORIGIN=*
+
+# JWT
+JWT_ACCESS_TOKEN_EXPIRY=15m
+JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
+
+# File Upload (Local)
+UPLOAD_MAX_SIZE=10485760
+UPLOADS_DIR=uploads
+
+# External APIs (Optional)
+AWC_API_URL=https://aviationweather.gov/api/data
+NMS_API_KEY=
+NMS_API_SECRET=
+NMS_API_URL=
+NMS_API_URL_AUTH=
+```
+
+### Production Environment
+
+```bash .env (Production)
+# Database
+POSTGRES_DB=estadistica-hangar
+DB_PORT=5432
+DB_HOST=production-db.example.com
+POSTGRES_USER=sigsaho_user
+POSTGRES_PASSWORD=<strong-secure-password>
+
+# Server
+PORT=3001
+NODE_ENV=production
+
+# Database Sync (NEVER true in production)
+API_DB_SYNC=false
+# SEED_TEST_DATA should not be set
+
+# API
+API_IS_PROD=true
+
+# Security (MUST be strong, random values)
+TOKEN_SECRET=<64-char-random-hex-string>
+SECRET_PASSWORD_ENCRYPT=<64-char-random-hex-string>
+CORS_ORIGIN=https://sigsaho.yourdomain.com
+
+# JWT
+JWT_ACCESS_TOKEN_EXPIRY=15m
+JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
+
+# AWS S3 (Required in production)
+AWS_ACCESS_KEY_ID=<your-aws-access-key>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=sigsaho-production-uploads
+
+# File Upload
+UPLOAD_MAX_SIZE=10485760
+UPLOADS_DIR=uploads
+
+# External APIs
+AWC_API_URL=https://aviationweather.gov/api/data
+NMS_API_KEY=<your-nms-api-key>
+NMS_API_SECRET=<your-nms-api-secret>
+NMS_API_URL=https://api.nms.example.com/v1
+NMS_API_URL_AUTH=https://auth.nms.example.com/token
+```
+
+## Docker Environment Variables
+
+When using Docker, pass environment variables via:
+
+### Docker Run
+
+```bash
+docker run -e POSTGRES_DB=estadistica-hangar \
+  -e DB_HOST=postgres \
+  -e DB_PORT=5432 \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=secure_password \
+  -e PORT=3001 \
+  -e NODE_ENV=production \
+  sigsaho-backend
+```
+
+### Docker Compose
+
+```yaml docker-compose.yml
+services:
+  backend:
+    image: sigsaho-backend
+    environment:
+      - POSTGRES_DB=estadistica-hangar
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - PORT=3001
+      - NODE_ENV=production
+      - TOKEN_SECRET=${TOKEN_SECRET}
+      - SECRET_PASSWORD_ENCRYPT=${SECRET_PASSWORD_ENCRYPT}
+    env_file:
+      - .env.production
+  
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=estadistica-hangar
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+```
+
+## Security Best Practices
+
+<Warning>
+  **Production Security Checklist**
+</Warning>
+
+### Required for Production
+
+- ✅ Set `NODE_ENV=production`
+- ✅ Use strong, random values for `TOKEN_SECRET` (min 32 chars)
+- ✅ Use strong, random values for `SECRET_PASSWORD_ENCRYPT` (min 32 chars)
+- ✅ Set `API_DB_SYNC=false` (use migrations instead)
+- ✅ Set specific `CORS_ORIGIN` (never use `*`)
+- ✅ Use strong database password
+- ✅ Configure AWS S3 credentials securely
+- ✅ Remove or comment out `SEED_TEST_DATA`
+
+### Secret Generation
+
+Generate secure secrets using:
+
+```bash
+# Generate 32-byte hex string (64 characters)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Generate 64-byte hex string (128 characters)
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Using OpenSSL
+openssl rand -hex 32
+```
+
+### Environment Variable Storage
+
+**Never** store production environment variables in:
+- Git repositories
+- `.env` files committed to version control
+- Public documentation
+- Unencrypted files
+
+**Do** store them in:
+- Cloud platform secrets managers (AWS Secrets Manager, Azure Key Vault)
+- Environment variable configuration in hosting platform
+- Encrypted configuration management tools
+- Secure password managers (for team access)
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Environment variables not loading">
+    **Symptoms**: Application uses default values instead of `.env` values.
+    
+    **Solutions**:
+    1. Ensure `.env` file is in the correct directory (`back/` for backend)
+    2. Verify `dotenv` is configured in entry point:
+       ```typescript
+       import dotenv from 'dotenv';
+       dotenv.config();
+       ```
+    3. Restart the development server
+    4. Check for syntax errors in `.env` file (no spaces around `=`)
+  </Accordion>
+
+  <Accordion title="Database connection refused">
+    **Symptoms**: `ECONNREFUSED` or connection timeout errors.
+    
+    **Solutions**:
+    1. Verify PostgreSQL is running
+    2. Check `DB_HOST`, `DB_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+    3. Ensure database `POSTGRES_DB` exists
+    4. Check firewall rules
+    5. For Docker: use service name instead of `localhost`
+  </Accordion>
+
+  <Accordion title="CORS errors">
+    **Symptoms**: Browser console shows CORS policy errors.
+    
+    **Solutions**:
+    1. Verify `CORS_ORIGIN` matches frontend URL exactly
+    2. Include protocol (`http://` or `https://`)
+    3. Don't include trailing slash
+    4. For multiple origins, use comma separation
+    
+    ```bash
+    # Correct
+    CORS_ORIGIN=http://localhost:5173
+    
+    # Wrong
+    CORS_ORIGIN=localhost:5173  # Missing protocol
+    CORS_ORIGIN=http://localhost:5173/  # Trailing slash
+    ```
+  </Accordion>
+
+  <Accordion title="JWT token errors">
+    **Symptoms**: Authentication fails, token invalid errors.
+    
+    **Solutions**:
+    1. Ensure `TOKEN_SECRET` is set and matches across instances
+    2. Check `JWT_ACCESS_TOKEN_EXPIRY` format is correct
+    3. Verify token hasn't expired
+    4. Clear browser localStorage/cookies and login again
+  </Accordion>
+
+  <Accordion title="File upload fails">
+    **Symptoms**: Upload returns 500 error or files not saved.
+    
+    **Solutions**:
+    
+    **Development** (`NODE_ENV=development`):
+    1. Check `UPLOADS_DIR` exists and is writable
+    2. Verify `UPLOAD_MAX_SIZE` is sufficient
+    
+    **Production** (`NODE_ENV=production`):
+    1. Verify AWS credentials are correct
+    2. Check S3 bucket exists and is accessible
+    3. Verify IAM permissions for S3 operations
+    4. Check `AWS_REGION` matches bucket region
+  </Accordion>
+</AccordionGroup>
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/deployment/installation">
+    Set up SIGSAHO from scratch
+  </Card>
+  
+  <Card title="Configuration" icon="gear" href="/deployment/configuration">
+    Configure SIGSAHO for your environment
+  </Card>
+  
+  <Card title="Backend Config Reference" icon="file-code" href="https://github.com/expressjs/express">
+    Express.js configuration documentation
+  </Card>
+  
+  <Card title="Vite Environment Variables" icon="bolt" href="https://vite.dev/guide/env-and-mode.html">
+    Vite's environment variable guide
+  </Card>
+</CardGroup>

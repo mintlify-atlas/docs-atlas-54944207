@@ -1,0 +1,200 @@
+---
+title: Introduction to SIGSAHO
+description: Aviation Operations Management System for fleet, flight operations, crew, and maintenance management
+---
+
+<img
+  className="block"
+  src="/images/hero-light.svg"
+  alt="SIGSAHO Hero Light"
+/>
+
+# Welcome to SIGSAHO
+
+**S.I.G.S.A.H.O.** (Sistema de Gestión de Operaciones Aeronáuticas) is a comprehensive **Aviation Operations Management System** designed to centralize, control, and optimize aeronautical operations. Built as a full-stack SaaS application, SIGSAHO empowers aviation teams to manage their entire operation from a single platform.
+
+## What is SIGSAHO?
+
+SIGSAHO is an enterprise-grade system that brings together:
+
+- **Fleet Management** - Track aircraft status, maintenance schedules, and component lifecycles
+- **Flight Operations** - Manage medical and operational transfers with real-time tracking
+- **Crew Management** - Monitor personnel certifications, training, and compliance
+- **Maintenance Control** - Schedule inspections, track service history, and manage parts inventory
+- **Operational Intelligence** - Dashboard analytics and statistical insights for data-driven decisions
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart Guide"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get up and running in minutes - from account setup to your first flight entry
+  </Card>
+  <Card
+    title="Dashboard Overview"
+    icon="gauge"
+    href="/dashboard"
+  >
+    Understand your operational command center and key performance indicators
+  </Card>
+  <Card
+    title="Fleet Management"
+    icon="plane"
+    href="/fleet/overview"
+  >
+    Learn how to manage aircraft, track hours, and schedule maintenance
+  </Card>
+  <Card
+    title="Flight Operations"
+    icon="route"
+    href="/operations/transfers"
+  >
+    Record medical and operational transfers with full crew tracking
+  </Card>
+</CardGroup>
+
+## Key Features
+
+### Centralized Operations
+
+All your aviation operations in one place - no more juggling spreadsheets, paper logs, and disconnected systems. SIGSAHO provides a single source of truth for your entire operation.
+
+### Role-Based Access Control
+
+Granular permission system ensures users only see what they need. From administrators to dispatchers, maintenance crews to training coordinators - everyone has their tailored workspace.
+
+```typescript
+// Example: System roles in SIGSAHO
+export enum SystemRoles {
+  ADMINISTRADOR = 'ADMINISTRADOR',
+  DIRECTOR = 'DIRECTOR',
+  DESPACHADOR = 'DESPACHADOR',
+  MANTENIMIENTO = 'MANTENIMIENTO',
+  EDITOR_TM = 'EDITOR_TM',  // Medical Transfers
+  EDITOR_TG = 'EDITOR_TG',  // Operational Transfers
+  CAPACITACION = 'CAPACITACION'
+}
+```
+
+### Real-Time Data
+
+Powered by TanStack Query for efficient server-state management, SIGSAHO keeps your data fresh with intelligent caching and background updates.
+
+### Mobile-First Design
+
+Responsive interface built with Tailwind CSS ensures seamless experience across desktop, tablet, and mobile devices - manage operations from anywhere.
+
+## Technology Stack
+
+<CardGroup cols={2}>
+  <Card title="Frontend" icon="browser">
+    - **React 19** with TypeScript
+    - **Vite** for blazing-fast builds
+    - **TanStack Query** for server state
+    - **React Router v7** for navigation
+    - **shadcn/ui** component library
+    - **Tailwind CSS v4** for styling
+  </Card>
+  <Card title="Backend" icon="server">
+    - **Express** with TypeScript
+    - **TypeORM** for database management
+    - **PostgreSQL** for data persistence
+    - **JWT** authentication with httpOnly cookies
+    - **Zod** for validation
+  </Card>
+</CardGroup>
+
+## Architecture Highlights
+
+### Feature-Sliced Design (FSD)
+
+SIGSAHO's frontend follows Feature-Sliced Design architecture, organizing code by business domains rather than technical layers:
+
+```text
+src/features/
+├── auth/              # Authentication & authorization
+├── dashboard/         # Main operational dashboard
+├── registerServices/  # Flight transfer management
+├── despacho/          # Fleet dispatch & maintenance
+├── controlAereo/      # Air traffic tools (METAR, W&B)
+├── seguimiento/       # Personnel training & tracking
+└── configuracion/     # System configuration (admin)
+```
+
+Each feature is self-contained with its own:
+- **Data layer** - TypeScript types and Zod schemas
+- **Service layer** - API communication hooks
+- **ViewModel layer** - Business logic and state management  
+- **View layer** - UI components and pages
+
+<Note>
+  This architecture ensures features remain isolated, testable, and maintainable as the system scales.
+</Note>
+
+### Security-First Authentication
+
+SIGSAHO implements a zero-localStorage security model:
+
+- **httpOnly cookies** - Tokens never exposed to JavaScript
+- **XSS mitigation** - Session data stored server-side only
+- **Automatic token refresh** - Seamless session management
+- **Type-safe guards** - Runtime validation of user roles
+
+```typescript
+// Example: Protected route with role requirement
+<RequireRole roles={[SystemRoles.DESPACHADOR, SystemRoles.ADMINISTRADOR]}>
+  <AircraftDispatch />
+</RequireRole>
+```
+
+## Who Uses SIGSAHO?
+
+<CardGroup cols={3}>
+  <Card title="Administrators" icon="user-shield">
+    Full system control, user management, and configuration
+  </Card>
+  <Card title="Dispatchers" icon="headset">
+    Fleet management, flight planning, and air traffic tools
+  </Card>
+  <Card title="Maintenance Teams" icon="wrench">
+    Track services, inspections, components, and compliance
+  </Card>
+  <Card title="Medical Transfer Editors" icon="heart-pulse">
+    Record and manage medical evacuation flights
+  </Card>
+  <Card title="Operations Editors" icon="clipboard-list">
+    Log general and operational flight transfers
+  </Card>
+  <Card title="Training Coordinators" icon="graduation-cap">
+    Monitor crew certifications and training compliance
+  </Card>
+</CardGroup>
+
+## What's Next?
+
+<Steps>
+  <Step title="Complete the Quickstart">
+    Follow our [quickstart guide](/quickstart) to set up your account and explore the dashboard
+  </Step>
+  <Step title="Explore Your Role">
+    Jump to the documentation section relevant to your responsibilities
+  </Step>
+  <Step title="Master Key Workflows">
+    Learn the common workflows for your daily operations
+  </Step>
+</Steps>
+
+<Warning>
+  SIGSAHO handles sensitive operational data. Ensure you follow your organization's security policies and never share your login credentials.
+</Warning>
+
+---
+
+## Need Help?
+
+If you encounter any issues or have questions:
+
+- Check the documentation for your specific module
+- Contact your system administrator
+- Consult the user guides for common workflows

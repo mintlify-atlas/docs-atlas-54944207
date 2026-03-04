@@ -1,0 +1,333 @@
+---
+title: 'Refresh Token'
+api: 'POST /auth/refresh'
+description: 'Generate a new access token using the refresh token'
+---
+
+## Endpoint
+
+```
+POST /auth/refresh
+```
+
+Generates a new access token using the refresh token stored in httpOnly cookies. This endpoint should be called when the access token expires (after 15 minutes) to maintain user authentication without requiring re-login.
+
+<Note>
+  **Rate Limiting:** This endpoint is limited to **10 requests per 15 minutes per IP address**.
+</Note>
+
+## Authentication
+
+This endpoint requires a valid refresh token stored in the `refreshToken` cookie. The refresh token is automatically sent by the browser when using the `credentials: 'include'` option.
+
+<Warning>
+  The refresh token must be valid and not expired. If the refresh token is invalid, expired, or missing, you'll receive a 401 error and the user must log in again.
+</Warning>
+
+## Request Body
+
+This endpoint does not require a request body. The refresh token is automatically read from cookies.
+
+<ParamField body="(none)" type="object">
+  Empty request body. The refresh token is read from the `refreshToken` cookie.
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message confirming token renewal
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Current authenticated user information
+  
+  <Expandable title="user properties">
+    <ResponseField name="id" type="number">
+      Unique user identifier
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      User's first name
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string">
+      User's paternal last name
+    </ResponseField>
+    
+    <ResponseField name="second_last_name" type="string">
+      User's maternal last name (optional)
+    </ResponseField>
+    
+    <ResponseField name="username" type="string">
+      Unique username
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address
+    </ResponseField>
+    
+    <ResponseField name="roles" type="array">
+      Array of role objects assigned to the user
+      
+      <Expandable title="role properties">
+        <ResponseField name="id" type="number">
+          Role identifier
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          Role name (e.g., "admin", "user", "pilot")
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="login_access" type="boolean">
+      Whether the user has login access to the system
+    </ResponseField>
+    
+    <ResponseField name="status" type="string">
+      User account status ("ACTIVE" or "DISABLED")
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Cookies Updated
+
+On successful token refresh, the following httpOnly cookies are updated:
+
+| Cookie Name | Value | Expiry | Attributes |
+|-------------|-------|--------|------------|
+| `accessToken` | New JWT access token | 15 minutes | httpOnly, secure (prod), sameSite=strict |
+| `refreshToken` | New JWT refresh token | 7 days | httpOnly, secure (prod), sameSite=strict |
+
+<Info>
+  Both access and refresh tokens are rotated on each refresh request for enhanced security. The old refresh token becomes invalid after a successful refresh.
+</Info>
+
+## Request Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.sigsaho.com/auth/refresh \
+  -H "Content-Type: application/json" \
+  -b "refreshToken=your_refresh_token_here" \
+  -d '{}'
+```
+
+```javascript JavaScript (Fetch)
+const response = await fetch('https://api.sigsaho.com/auth/refresh', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  credentials: 'include', // Important: Include cookies
+  body: JSON.stringify({})
+});
+
+if (response.ok) {
+  const data = await response.json();
+  console.log('Token refreshed:', data.message);
+  console.log('User:', data.user);
+} else if (response.status === 401) {
+  // Refresh token expired, redirect to login
+  window.location.href = '/login';
+}
+```
+
+```python Python (Requests)
+import requests
+
+# Assuming you have a session with cookies from login
+session = requests.Session()
+
+# First login to get cookies
+login_response = session.post(
+    "https://api.sigsaho.com/auth/login",
+    json={"identifier": "jperez", "password": "MySecure@Pass123"}
+)
+
+# Later, refresh the token
+refresh_response = session.post(
+    "https://api.sigsaho.com/auth/refresh",
+    json={}
+)
+
+if refresh_response.status_code == 200:
+    data = refresh_response.json()
+    print(f"Token refreshed: {data['message']}")
+    print(f"User: {data['user']['username']}")
+else:
+    print("Token refresh failed, please login again")
+```
+
+```typescript TypeScript (Axios)
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'https://api.sigsaho.com',
+  withCredentials: true, // Important: Include cookies
+});
+
+try {
+  const response = await api.post('/auth/refresh', {});
+  console.log('Token refreshed:', response.data.message);
+  console.log('User:', response.data.user);
+} catch (error) {
+  if (axios.isAxiosError(error) && error.response?.status === 401) {
+    // Redirect to login
+    window.location.href = '/login';
+  }
+}
+```
+</CodeGroup>
+
+## Response Examples
+
+<CodeGroup>
+```json 200 Success
+{
+  "message": "Token renovado exitosamente",
+  "user": {
+    "id": 1,
+    "name": "Juan",
+    "last_name": "Pérez",
+    "second_last_name": "García",
+    "username": "jperez",
+    "email": "juan.perez@example.com",
+    "roles": [
+      {
+        "id": 1,
+        "name": "admin"
+      }
+    ],
+    "login_access": true,
+    "status": "ACTIVE"
+  }
+}
+```
+
+```json 401 Invalid or Expired Token
+{
+  "error": "Refresh token inválido o expirado"
+}
+```
+
+```json 401 No Token Provided
+{
+  "error": "Refresh token no proporcionado"
+}
+```
+
+```json 429 Rate Limit Exceeded
+{
+  "error": "Demasiadas solicitudes - Rate limit excedido (10/15min)"
+}
+```
+</CodeGroup>
+
+## Error Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Token refreshed successfully, new cookies set |
+| 401 | Invalid, expired, or missing refresh token |
+| 429 | Rate limit exceeded (too many refresh requests) |
+
+## Implementation Details
+
+The refresh endpoint performs the following operations:
+
+1. **Extracts** the refresh token from the `refreshToken` cookie (src/controllers/auth.controller.ts:66)
+2. **Validates** the refresh token and retrieves the associated user
+3. **Generates** new access and refresh tokens
+4. **Invalidates** the old refresh token (token rotation for security)
+5. **Sets** new httpOnly cookies with the updated tokens
+6. **Returns** the user object with current roles
+
+<Warning>
+  If token refresh fails (401 error), the cookies are automatically cleared. Your application should redirect the user to the login page in this case.
+</Warning>
+
+## Token Rotation Security
+
+This endpoint implements **refresh token rotation**, a security best practice:
+
+<Steps>
+  <Step title="New Tokens Generated">
+    Both access and refresh tokens are regenerated on each refresh request
+  </Step>
+  <Step title="Old Token Invalidated">
+    The previous refresh token is immediately invalidated and cannot be reused
+  </Step>
+  <Step title="Reuse Detection">
+    If an old refresh token is used, it indicates a potential security breach (token theft)
+  </Step>
+</Steps>
+
+<Info>
+  Token rotation prevents refresh token theft attacks. If an attacker steals a refresh token, it will only be valid until the legitimate user refreshes their token.
+</Info>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="When to Refresh">
+    Call this endpoint:
+    - When you receive a 401 error from a protected endpoint
+    - Proactively before the access token expires (recommended: 1-2 minutes before 15-minute expiry)
+    - On application startup to restore authentication state
+  </Accordion>
+  
+  <Accordion title="Error Handling">
+    If refresh fails with 401:
+    1. Clear any client-side authentication state
+    2. Redirect user to login page
+    3. Display a message explaining the session expired
+  </Accordion>
+  
+  <Accordion title="Automatic Retry">
+    Implement automatic token refresh in your API client:
+    ```javascript
+    // Intercept 401 responses
+    axios.interceptors.response.use(
+      response => response,
+      async error => {
+        if (error.response?.status === 401) {
+          try {
+            await refreshToken();
+            // Retry original request
+            return axios.request(error.config);
+          } catch {
+            redirectToLogin();
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Configuration
+
+Token expiration is controlled by environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_ACCESS_TOKEN_EXPIRY` | `15m` | Access token lifetime |
+| `JWT_REFRESH_TOKEN_EXPIRY_DAYS` | `7` | Refresh token lifetime in days |
+| `TOKEN_SECRET` | - | JWT signing secret (required) |
+
+<Note>
+  See `.env.example` (lines 22-23) for configuration options: src/back/.env.example:22-23
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Login" icon="right-to-bracket" href="/api/auth/login">
+    Learn how to authenticate users
+  </Card>
+  <Card title="Protected Endpoints" icon="shield" href="/api/overview">
+    Use your access token to call protected endpoints
+  </Card>
+</CardGroup>

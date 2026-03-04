@@ -1,0 +1,126 @@
+---
+title: 'Authentication Overview'
+description: 'Learn how authentication works in the SIGSAHO API'
+---
+
+## Authentication Flow
+
+The SIGSAHO API uses a secure JWT-based authentication system with access and refresh tokens. All tokens are stored in httpOnly cookies for enhanced security.
+
+### Token Types
+
+<Card title="Access Token" icon="key">
+  Short-lived token used to authenticate API requests
+  - **Expiry:** 15 minutes
+  - **Storage:** httpOnly cookie named `accessToken`
+  - **Usage:** Automatically sent with requests to protected endpoints
+</Card>
+
+<Card title="Refresh Token" icon="arrows-rotate">
+  Long-lived token used to obtain new access tokens
+  - **Expiry:** 7 days (configurable via `JWT_REFRESH_TOKEN_EXPIRY_DAYS`)
+  - **Storage:** httpOnly cookie named `refreshToken`
+  - **Usage:** Automatically sent with refresh requests
+</Card>
+
+## Authentication Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Login" icon="right-to-bracket" href="/api/auth/login">
+    Authenticate with username/email and password
+  </Card>
+  <Card title="Refresh Token" icon="rotate" href="/api/auth/refresh">
+    Renew access token using refresh token
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="User Login">
+    Client sends credentials to `/auth/login`. On success, both access and refresh tokens are set as httpOnly cookies.
+  </Step>
+  <Step title="API Requests">
+    Access token is automatically included in requests via cookies. Protected endpoints verify the token.
+  </Step>
+  <Step title="Token Refresh">
+    When access token expires, client calls `/auth/refresh` to get a new access token using the refresh token.
+  </Step>
+  <Step title="Logout">
+    Client calls `/auth/logout` to invalidate the refresh token and clear cookies.
+  </Step>
+</Steps>
+
+## Security Features
+
+<Note>
+  All authentication tokens are stored in **httpOnly cookies** with the following security settings:
+  - `httpOnly: true` - Prevents JavaScript access (XSS protection)
+  - `secure: true` - HTTPS only in production
+  - `sameSite: 'strict'` - CSRF protection
+</Note>
+
+<Warning>
+  The API implements rate limiting on authentication endpoints:
+  - **Login:** 5 attempts per 15 minutes per IP
+  - **Refresh:** 10 requests per 15 minutes per IP
+  - **Logout:** 20 requests per 15 minutes per IP
+</Warning>
+
+## Configuration
+
+Authentication behavior is controlled by environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_ACCESS_TOKEN_EXPIRY` | `15m` | Access token expiration time |
+| `JWT_REFRESH_TOKEN_EXPIRY_DAYS` | `7` | Refresh token expiration in days |
+| `TOKEN_SECRET` | - | Secret key for JWT signing (required) |
+| `COOKIE_SECURE` | `false` (dev) / `true` (prod) | Enable secure cookies |
+
+## User Object Structure
+
+Successful authentication returns a user object with the following structure:
+
+```json
+{
+  "id": 1,
+  "name": "Juan",
+  "last_name": "Pérez",
+  "second_last_name": "García",
+  "username": "jperez",
+  "email": "juan.perez@example.com",
+  "roles": [
+    {
+      "id": 1,
+      "name": "admin"
+    }
+  ],
+  "login_access": true,
+  "status": "ACTIVE"
+}
+```
+
+## Error Handling
+
+Authentication endpoints return standard error responses:
+
+<CodeGroup>
+```json 401 Unauthorized
+{
+  "error": "Credenciales inválidas"
+}
+```
+
+```json 429 Rate Limit Exceeded
+{
+  "error": "Demasiados intentos. Intente nuevamente más tarde."
+}
+```
+
+```json 400 Bad Request
+{
+  "error": "Se requiere identifier (username/email) y password"
+}
+```
+</CodeGroup>

@@ -1,0 +1,274 @@
+---
+title: 'Architecture Overview'
+description: 'High-level overview of SIGSAHO system architecture'
+---
+
+## Introduction
+
+SIGSAHO (Sistema de Gestión de Operaciones Aeronáuticas) is a comprehensive aeronautical operations management system designed with scalability, maintainability, and robustness as core principles. The system follows a modern full-stack architecture with clear separation of concerns.
+
+## System Architecture
+
+SIGSAHO follows a three-tier architecture pattern:
+
+```text
+┌─────────────────────────────────────────────┐
+│           Frontend (React)                   │
+│  Feature-Sliced Design + MVVM Pattern       │
+└─────────────┬───────────────────────────────┘
+              │ HTTPS/REST API
+              │ (JSON)
+┌─────────────▼───────────────────────────────┐
+│          Backend (Express)                   │
+│  REST API + TypeORM + Business Logic        │
+└─────────────┬───────────────────────────────┘
+              │ TypeORM
+              │ (PostgreSQL Protocol)
+┌─────────────▼───────────────────────────────┐
+│         Database (PostgreSQL)                │
+│  Relational Data + Transactions + Indexes   │
+└─────────────────────────────────────────────┘
+```
+
+## Core Design Principles
+
+### Separation of Concerns
+- **Frontend**: Presentation logic, user interactions, client-side state management
+- **Backend**: Business logic, data validation, authentication/authorization, data access
+- **Database**: Data persistence, integrity constraints, complex queries
+
+### Feature-Based Organization
+Both frontend and backend are organized by business features rather than technical layers:
+
+**Frontend Features**:
+- `auth` - Authentication and user session management
+- `dashboard` - Main dashboard and statistics
+- `controlAereo` - Air traffic control operations
+- `despacho` - Dispatch management
+- `seguimiento` - Flight tracking and monitoring
+- `configuracion` - System configuration
+- `registerServices` - Aircraft service registration
+
+**Backend Modules**:
+- Authentication and authorization (JWT + refresh tokens)
+- User and role management
+- Aircraft management (fleet, parts, services, records)
+- Transfer operations (medical, training, general)
+- Flight balance and statistics
+- Document management (user and aircraft documents)
+- Geographic data (regions, municipalities, localities)
+- Reporting and dashboard analytics
+
+### Security-First Approach
+- **Authentication**: JWT-based with httpOnly cookies
+- **Authorization**: Role-based access control (RBAC)
+- **Data Protection**: Encryption for sensitive fields (e.g., passenger data)
+- **API Security**: Helmet.js, CORS, rate limiting, audit logging
+- **Database Security**: Soft deletes, transaction support, encrypted connections
+
+## Technology Stack
+
+### Frontend
+- **Framework**: React 19
+- **Language**: TypeScript 5.x
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS v4
+- **UI Components**: shadcn/ui (Radix UI)
+- **State Management**: 
+  - Server state: TanStack Query v5
+  - Local state: React hooks and contexts
+- **Forms**: React Hook Form v7 + Zod validation
+- **Routing**: React Router v7
+- **Data Visualization**: Recharts, Chart.js
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express 5
+- **Language**: TypeScript 5.x
+- **ORM**: TypeORM 0.3
+- **Database**: PostgreSQL
+- **Authentication**: JWT (jsonwebtoken)
+- **Security**: Helmet, CORS, bcryptjs
+- **File Handling**: Multer, Sharp
+- **Documentation**: Swagger UI + swagger-jsdoc
+- **Validation**: Zod
+
+### Database
+- **RDBMS**: PostgreSQL 8.x
+- **Migration Strategy**: TypeORM migrations
+- **Features Used**:
+  - JSONB columns for flexible data
+  - Composite indexes for performance
+  - Soft deletes with `deleted_at` timestamps
+  - Foreign key constraints with cascade rules
+  - Enum types for categorical data
+
+## Data Flow
+
+### Request Flow (Typical Operation)
+
+1. **User Action**: User interacts with React component
+2. **Form Validation**: Zod schema validates input locally
+3. **API Call**: TanStack Query sends HTTP request to backend
+4. **Middleware Stack**: 
+   - Rate limiting (burst + sustained)
+   - JWT authentication
+   - Role-based authorization
+   - Request validation (Zod schemas)
+5. **Controller**: Routes request to appropriate service
+6. **Service Layer**: Business logic execution
+7. **Repository/ORM**: TypeORM executes database queries
+8. **Database**: PostgreSQL processes query and returns data
+9. **Response**: Data flows back through layers
+10. **State Update**: TanStack Query updates cache and triggers re-render
+11. **UI Update**: React components display updated data
+
+### Authentication Flow
+
+```text
+1. User submits credentials
+   ↓
+2. Backend validates username/email + password
+   ↓
+3. Generate access token (15 min) + refresh token (30 days)
+   ↓
+4. Set httpOnly cookies (secure in production)
+   ↓
+5. Return user data to frontend
+   ↓
+6. Frontend stores user in React Query cache
+   ↓
+7. Subsequent requests include access token cookie
+   ↓
+8. JWT middleware validates token on each request
+   ↓
+9. When access token expires, refresh endpoint renews it
+```
+
+## Key Architectural Patterns
+
+### Frontend Patterns
+- **Feature-Sliced Design (FSD)**: Features organized by business domain
+- **MVVM (Model-View-ViewModel)**: Separation of data, presentation logic, and UI
+- **Repository Pattern**: TanStack Query hooks encapsulate API calls
+- **Compound Components**: Complex UI built from composable parts
+- **Schema-First Validation**: Zod schemas define data contracts
+
+### Backend Patterns
+- **Layered Architecture**: Controllers → Services → Repositories
+- **Dependency Injection**: Service instances injected where needed
+- **Repository Pattern**: TypeORM repositories abstract data access
+- **Middleware Pipeline**: Request processing through composable middlewares
+- **DTO Pattern**: Data Transfer Objects for API contracts
+
+### Database Patterns
+- **Soft Deletes**: Preserve audit trail with `deleted_at` column
+- **Audit Logging**: Track all mutating operations (POST/PUT/PATCH/DELETE)
+- **Optimistic Concurrency**: `updated_at` timestamps for version tracking
+- **Normalized Schema**: Reduce redundancy, enforce referential integrity
+- **Strategic Indexes**: Composite indexes on frequently queried columns
+
+## API Design
+
+The backend exposes a RESTful API following these conventions:
+
+- **Base URL**: `/api/v1`
+- **Authentication**: Cookie-based JWT
+- **Content-Type**: `application/json`
+- **Error Format**: Consistent error response structure
+- **Documentation**: Swagger UI at `/api-docs`
+
+### API Endpoints Structure
+
+```
+/api/v1/auth              - Authentication endpoints
+/api/v1/users             - User management
+/api/v1/roles             - Role management
+/api/v1/aircrafts         - Aircraft fleet management
+/api/v1/aircraft-parts    - Aircraft parts tracking
+/api/v1/aircraft-services - Maintenance services
+/api/v1/aircraft-records  - Flight records
+/api/v1/transfers         - Transfer operations
+/api/v1/medical-transfers - Medical transfers
+/api/v1/trainings         - Training programs
+/api/v1/flight-balances   - Flight balance sheets
+/api/v1/dashboard         - Dashboard statistics
+/api/v1/reports           - Report generation
+/api/v1/geography         - Geographic data
+```
+
+## Scalability Considerations
+
+### Frontend
+- Code splitting with React.lazy and Suspense
+- Query caching and invalidation with TanStack Query
+- Optimized re-renders with React 19 compiler
+- Pagination for large datasets
+- Virtual scrolling for long lists
+
+### Backend
+- Stateless API design (horizontal scaling ready)
+- Database connection pooling
+- Query optimization with indexes
+- Rate limiting to prevent abuse
+- Efficient N+1 query prevention with eager loading
+
+### Database
+- Indexed foreign keys for join performance
+- Composite indexes for common query patterns
+- Partitioning strategy for historical data (future)
+- Read replicas for reporting (future)
+
+## Monitoring and Observability
+
+### Logging
+- **Frontend**: Console errors captured in production
+- **Backend**: Morgan HTTP request logging
+- **Database**: TypeORM query logging in development
+
+### Audit Trail
+- All data mutations logged to `audit_logs` table
+- Tracks: user, action, timestamp, affected entity
+- Immutable audit records for compliance
+
+## Deployment Architecture
+
+```text
+┌──────────────┐
+│   Client     │
+│  (Browser)   │
+└──────┬───────┘
+       │ HTTPS
+┌──────▼───────────┐
+│  Web Server      │
+│  (Nginx/Apache)  │
+└──────┬───────────┘
+       │
+       ├─────────────────┐
+       │                 │
+┌──────▼───────┐  ┌──────▼────────┐
+│   Frontend   │  │   Backend     │
+│   (Static)   │  │  (Node.js)    │
+└──────────────┘  └──────┬────────┘
+                         │
+                  ┌──────▼────────┐
+                  │  PostgreSQL   │
+                  │   Database    │
+                  └───────────────┘
+```
+
+## Next Steps
+
+Explore the detailed architecture documentation:
+
+<CardGroup cols={3}>
+  <Card title="Frontend" icon="react" href="/architecture/frontend">
+    React architecture with Feature-Sliced Design
+  </Card>
+  <Card title="Backend" icon="server" href="/architecture/backend">
+    Express API with TypeORM
+  </Card>
+  <Card title="Database" icon="database" href="/architecture/database">
+    PostgreSQL schema and design
+  </Card>
+</CardGroup>

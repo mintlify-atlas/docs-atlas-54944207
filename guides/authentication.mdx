@@ -1,0 +1,204 @@
+---
+title: "Authentication Guide"
+description: "Learn how to access and secure your SIGSAHO account"
+---
+
+This guide walks you through the authentication process in SIGSAHO, including login procedures, role-based access control, and security best practices.
+
+## Overview
+
+SIGSAHO uses a secure, cookie-based authentication system with role-based access control (RBAC). Your access level determines which features and data you can view and modify.
+
+## Logging In
+
+<Steps>
+  <Step title="Navigate to the login page">
+    Open your web browser and navigate to the SIGSAHO application URL. You'll be automatically redirected to the login page if you're not authenticated.
+  </Step>
+
+  <Step title="Enter your credentials">
+    Provide your login credentials:
+    - **Username or Email**: Enter either your username (minimum 3 characters) or your registered email address
+    - **Password**: Enter your password (minimum 6 characters)
+    
+    <Note>
+    The system validates your input format before submitting to the server. Invalid formats will show an immediate error message.
+    </Note>
+  </Step>
+
+  <Step title="Optional: Enable 'Remember Me'">
+    Check the "Remember Me" option if you want the system to maintain your session for an extended period on this device.
+    
+    <Warning>
+    Only use "Remember Me" on personal devices. Never enable this option on shared or public computers.
+    </Warning>
+  </Step>
+
+  <Step title="Submit and access the system">
+    Click the "Sign In" button. Upon successful authentication:
+    - You'll be redirected to the Dashboard or your originally requested page
+    - A secure HTTP-only cookie will be set to maintain your session
+    - Your user profile and permissions will be loaded
+  </Step>
+</Steps>
+
+### Common Login Errors
+
+If you encounter issues during login, check the following:
+
+| Error Message | Cause | Solution |
+|--------------|-------|----------|
+| Invalid credentials | Incorrect username/password | Verify your credentials and try again. Contact your administrator if you've forgotten your password. |
+| User not authorized to login | Account lacks login permissions | Your account role doesn't have login privileges. Contact an administrator. |
+| Too many requests | Rate limit exceeded | Wait a few minutes before attempting to login again. |
+| Account blocked | Multiple failed attempts | Contact your system administrator to unlock your account. |
+
+<Tip>
+For security reasons, the password field is automatically cleared after a failed login attempt with a 401 error.
+</Tip>
+
+## Understanding Roles
+
+SIGSAHO implements a role-based access control system. Your assigned role determines your permissions throughout the application.
+
+### Available Roles
+
+**Administrative Roles** (Full System Access)
+- `ADMINISTRADOR` - Full administrative privileges
+- `DIRECTOR` - Director-level access with read/write permissions
+
+**Editorial Roles** (Content Management)
+- `EDITOR-TM` - Technical maintenance editor
+- `EDITOR-TG` - General editor
+
+**Operational Roles** (Day-to-day Operations)
+- `MANTENIMIENTO` - Maintenance operations
+- `CAPACITACION` - Training and certification management
+- `DESPACHADOR` - Dispatcher/Flight operations
+
+**Identification Roles** (Limited Login Access)
+- `MEDICO` - Medical personnel (limited access)
+- `PILOTO` - Pilot (flight-specific access)
+- `ENFERMERO` - Nursing staff
+- `TSUP` - Technical supervisor
+
+<Note>
+Only users with Administrative, Editorial, or Operational roles can login to the web platform. Identification roles are used for record-keeping and may have restricted access to specific modules.
+</Note>
+
+## Session Security
+
+### How Sessions Work
+
+SIGSAHO uses a "stateless" client architecture for maximum security:
+
+1. **No Local Storage**: Authentication tokens are never stored in browser localStorage or sessionStorage
+2. **HTTP-Only Cookies**: Session data is maintained exclusively through secure HTTP-only cookies managed by the backend
+3. **In-Memory Tokens**: Access tokens remain only in volatile memory, preventing XSS attacks
+4. **Automatic Refresh**: Sessions are automatically validated and refreshed on page load
+
+### Session Restoration
+
+When you return to SIGSAHO:
+- The application automatically validates your existing session cookie
+- If valid, you're logged in without re-entering credentials
+- If expired or invalid, you're redirected to the login page
+
+<Tip>
+The system distinguishes between authentication errors (401, 403) and temporary network issues (429, 500). You won't be logged out due to temporary server problems.
+</Tip>
+
+## Protected Routes
+
+Certain pages and features are protected based on authentication status and role:
+
+### Authentication-Only Protection
+Some routes require any authenticated user:
+- Dashboard
+- Profile settings
+- Basic reporting
+
+### Role-Based Protection
+Other routes require specific roles:
+- **System Configuration**: `ADMINISTRADOR`, `DIRECTOR`
+- **User Management**: `ADMINISTRADOR`, `DIRECTOR`
+- **Advanced Analytics**: `ADMINISTRADOR`, `DIRECTOR`, `EDITOR-TM`, `EDITOR-TG`
+- **Flight Dispatch**: `DESPACHADOR`, `ADMINISTRADOR`
+- **Maintenance Records**: `MANTENIMIENTO`, `ADMINISTRADOR`
+
+### Access Denied
+
+If you attempt to access a page without sufficient permissions:
+1. You'll be redirected to an "Unauthorized" page (403 error)
+2. The page explains why access was denied
+3. Quick action buttons help you navigate back to the Dashboard
+
+## Logging Out
+
+<Steps>
+  <Step title="Access the user menu">
+    Click on your user avatar or name in the top-right corner of the application.
+  </Step>
+
+  <Step title="Select 'Logout'">
+    Click the "Logout" or "Cerrar Sesión" option from the dropdown menu.
+  </Step>
+
+  <Step title="Confirm logout">
+    Your session will be terminated:
+    - The HTTP-only cookie will be cleared
+    - You'll be redirected to the login page
+    - All in-memory authentication data will be removed
+  </Step>
+</Steps>
+
+<Warning>
+Always log out when using shared computers or when you've finished your session, especially on public networks.
+</Warning>
+
+## Security Best Practices
+
+### Password Guidelines
+- Use a strong, unique password (minimum 6 characters, but longer is better)
+- Include a mix of uppercase, lowercase, numbers, and special characters
+- Never share your password with others
+- Change your password regularly
+
+### Account Security
+- Log out after each session on shared devices
+- Don't enable "Remember Me" on public computers
+- Report suspicious activity to your administrator immediately
+- Review your account activity regularly
+
+### Browser Security
+- Keep your browser updated to the latest version
+- Enable browser security features
+- Avoid accessing SIGSAHO from untrusted networks without VPN
+- Clear browser cache and cookies on shared devices
+
+## Troubleshooting
+
+### Cannot Access the Login Page
+1. Check your internet connection
+2. Verify the URL is correct
+3. Try clearing browser cache and cookies
+4. Contact IT support if the issue persists
+
+### Session Expires Frequently
+- This may be due to security policies
+- Contact your administrator to review session timeout settings
+- Ensure you're not accessing from multiple devices simultaneously
+
+### Forgotten Password
+1. Contact your system administrator
+2. Provide your username or email for verification
+3. Follow the administrator's password reset procedure
+
+<Note>
+SIGSAHO does not currently support self-service password reset. All password changes must be performed by system administrators.
+</Note>
+
+## Related Resources
+
+- [Dashboard Overview](/guides/dashboard) - Learn about the main dashboard interface
+- [Backend Architecture](/architecture/backend) - Security implementation details

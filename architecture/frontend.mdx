@@ -1,0 +1,489 @@
+---
+title: 'Frontend Architecture'
+description: 'React-based frontend architecture using Feature-Sliced Design and MVVM patterns'
+---
+
+## Overview
+
+The SIGSAHO frontend is built with React 19 and TypeScript, following Feature-Sliced Design (FSD) principles combined with MVVM (Model-View-ViewModel) patterns. This architecture prioritizes modularity, testability, and maintainability.
+
+## Architectural Pattern: Feature-Sliced Design (FSD)
+
+Instead of organizing code by technical type (`components/`, `pages/`, `hooks/`), FSD organizes by business domain:
+
+```text
+src/
+├── features/              # Business features (domain-driven)
+│   ├── auth/             # Authentication feature
+│   ├── dashboard/        # Dashboard feature
+│   ├── controlAereo/     # Air control feature
+│   ├── despacho/         # Dispatch feature
+│   ├── seguimiento/      # Tracking feature
+│   ├── configuracion/    # Configuration feature
+│   └── registerServices/ # Service registration
+├── components/           # Shared/common components
+│   ├── ui/              # shadcn/ui components
+│   ├── common/          # Reusable components
+│   ├── header/          # Header components
+│   └── providers/       # Context providers
+├── lib/                 # Utilities and helpers
+├── hooks/               # Shared custom hooks
+├── types/               # Global TypeScript types
+├── routes/              # Routing configuration
+└── layout/              # Layout components
+```
+
+### Benefits of FSD
+
+- **Low Coupling**: Features are independent and can be modified in isolation
+- **High Cohesion**: Related code stays together
+- **Scalability**: Easy to add new features without affecting existing ones
+- **Team Collaboration**: Multiple developers can work on different features simultaneously
+- **Code Navigation**: Easier to find code by feature rather than technical type
+
+## Feature Structure (MVVM Pattern)
+
+Each feature follows a consistent internal structure aligned with MVVM:
+
+```text
+features/[feature-name]/
+├── data/              # Model Layer
+│   ├── schema.ts     # Zod schemas (single source of truth)
+│   └── types.ts      # TypeScript types (inferred from schemas)
+├── hooks/             # ViewModel Layer
+│   ├── use-fetch-[resource].ts
+│   ├── use-create-[resource].ts
+│   └── use-[feature]-logic.ts
+├── components/        # View Layer (presentational)
+│   ├── [feature]-form.tsx
+│   ├── [feature]-table.tsx
+│   └── [feature]-card.tsx
+├── widgets/           # View Layer (smart components)
+│   └── [feature]-widget.tsx
+└── pages/             # View Layer (routes)
+    ├── [feature]-list.tsx
+    ├── [feature]-detail.tsx
+    └── [feature]-create.tsx
+```
+
+### Layer Responsibilities
+
+#### 1. Model Layer (`data/`)
+
+Defines the structure and validation rules for domain data.
+
+**Example from `features/auth/data/schema.ts`:**
+
+```typescript
+import { z } from 'zod';
+
+// Schema as single source of truth
+export const loginSchema = z.object({
+  identifier: z.string().min(1, 'Identifier is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export const userSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  last_name: z.string(),
+  second_last_name: z.string(),
+  username: z.string().nullable(),
+  email: z.string().email(),
+  roles: z.array(roleSchema),
+  login_access: z.boolean(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'ELIMINATED']),
+});
+
+// TypeScript types inferred from schemas
+export type LoginInput = z.infer<typeof loginSchema>;
+export type User = z.infer<typeof userSchema>;
+```
+
+**Key Principles:**
+- Zod schemas are the single source of truth
+- TypeScript types are inferred from schemas (not duplicated)
+- Metadata for UI (column definitions, form fields) lives here
+- No UI logic, only data structure and validation
+
+#### 2. ViewModel Layer (`hooks/`)
+
+Manages state, business logic, and communication with the backend.
+
+**Example: Data fetching hook**
+
+```typescript
+// features/aircraft/hooks/use-fetch-aircrafts.ts
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import { aircraftSchema } from '../data/schema';
+
+export function useFetchAircrafts() {
+  return useQuery({
+    queryKey: ['aircrafts'],
+    queryFn: async () => {
+      const response = await apiClient.get('/aircrafts');
+      // Validate response with Zod schema
+      return aircraftSchema.array().parse(response.data);
+    },
+  });
+}
+```
+
+**Example: Mutation hook**
+
+```typescript
+// features/aircraft/hooks/use-create-aircraft.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import { createAircraftSchema } from '../data/schema';
+import { toast } from 'sonner';
+
+export function useCreateAircraft() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreateAircraftInput) => {
+      const response = await apiClient.post('/aircrafts', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['aircrafts'] });
+      toast.success('Aircraft created successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to create aircraft');
+    },
+  });
+}
+```
+
+**Key Principles:**
+- Custom hooks encapsulate all data fetching and mutations
+- TanStack Query manages server state (caching, invalidation, loading states)
+- No direct API calls in components
+- Business logic stays in hooks, not in UI components
+
+#### 3. View Layer (`components/`, `widgets/`, `pages/`)
+
+**Presentational Components** (`components/`):
+- Pure, reusable UI components
+- Receive data via props
+- No direct API calls or complex state
+- Focus on rendering and user interaction events
+
+```typescript
+// features/aircraft/components/aircraft-card.tsx
+import { Aircraft } from '../data/types';
+
+interface AircraftCardProps {
+  aircraft: Aircraft;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+}
+
+export function AircraftCard({ aircraft, onEdit, onDelete }: AircraftCardProps) {
+  return (
+    <div className="border rounded-lg p-4">
+      <h3 className="font-semibold">{aircraft.name}</h3>
+      <p className="text-sm text-muted-foreground">{aircraft.registration}</p>
+      <div className="mt-4 flex gap-2">
+        <Button onClick={() => onEdit(aircraft.id)}>Edit</Button>
+        <Button variant="destructive" onClick={() => onDelete(aircraft.id)}>
+          Delete
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+**Smart Components** (`widgets/`):
+- Connect data (hooks) with presentational components
+- Handle complex UI state (dialogs, forms)
+- Orchestrate multiple presentational components
+
+```typescript
+// features/aircraft/widgets/aircraft-list-widget.tsx
+import { useFetchAircrafts } from '../hooks/use-fetch-aircrafts';
+import { useDeleteAircraft } from '../hooks/use-delete-aircraft';
+import { AircraftCard } from '../components/aircraft-card';
+
+export function AircraftListWidget() {
+  const { data: aircrafts, isLoading } = useFetchAircrafts();
+  const { mutate: deleteAircraft } = useDeleteAircraft();
+
+  if (isLoading) return <Spinner />;
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {aircrafts?.map((aircraft) => (
+        <AircraftCard
+          key={aircraft.id}
+          aircraft={aircraft}
+          onEdit={(id) => console.log('Edit', id)}
+          onDelete={(id) => deleteAircraft(id)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+**Pages** (`pages/`):
+- Mapped to routes
+- Compose widgets and components
+- Minimal logic (just layout and composition)
+
+```typescript
+// features/aircraft/pages/aircraft-list-page.tsx
+import { AircraftListWidget } from '../widgets/aircraft-list-widget';
+import { PageHeader } from '@/components/common/page-header';
+
+export function AircraftListPage() {
+  return (
+    <div>
+      <PageHeader title="Aircraft Fleet" />
+      <AircraftListWidget />
+    </div>
+  );
+}
+```
+
+## State Management Strategy
+
+SIGSAHO uses a **hybrid state management approach**:
+
+### Server State (TanStack Query)
+
+Manages all data from the API:
+- Automatic caching
+- Background refetching
+- Optimistic updates
+- Request deduplication
+- Retry logic
+
+```typescript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// Fetching data
+const { data, isLoading, error } = useQuery({
+  queryKey: ['transfers'],
+  queryFn: fetchTransfers,
+});
+
+// Mutating data
+const { mutate } = useMutation({
+  mutationFn: createTransfer,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['transfers'] });
+  },
+});
+```
+
+### UI State (React Hooks)
+
+Local component state using built-in hooks:
+- `useState` for simple state
+- `useReducer` for complex state
+- `useContext` for shared UI state (theme, modals)
+
+```typescript
+// Modal state
+const [isOpen, setIsOpen] = useState(false);
+
+// Form state (React Hook Form)
+const form = useForm<LoginInput>({
+  resolver: zodResolver(loginSchema),
+});
+```
+
+### No Global Store
+
+SIGSAHO intentionally avoids Redux/Zustand:
+- Server state lives in TanStack Query
+- UI state is colocated with components
+- Shared state uses Context (sparingly)
+- Simpler mental model, less boilerplate
+
+## Form Handling Pattern
+
+All forms follow the same pattern:
+
+1. **Define Schema** (in `data/schema.ts`)
+2. **Create Form Component** (in `components/`)
+3. **Use React Hook Form + Zod**
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { transferSchema } from '../data/schema';
+
+export function TransferForm() {
+  const form = useForm({
+    resolver: zodResolver(transferSchema),
+    defaultValues: {
+      date: new Date(),
+      time: 0,
+      // ...
+    },
+  });
+
+  const onSubmit = (data: TransferInput) => {
+    // Mutation hook handles API call
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        {/* Form fields */}
+      </form>
+    </Form>
+  );
+}
+```
+
+## Routing Architecture
+
+Routes are defined centrally and lazy-loaded:
+
+```typescript
+// src/routes/AppRoutes.tsx
+import { lazy } from 'react';
+
+const AircraftListPage = lazy(() => import('@/features/aircraft/pages/aircraft-list-page'));
+const AircraftDetailPage = lazy(() => import('@/features/aircraft/pages/aircraft-detail-page'));
+
+export const routes = [
+  {
+    path: '/aircraft',
+    element: <AircraftListPage />,
+  },
+  {
+    path: '/aircraft/:id',
+    element: <AircraftDetailPage />,
+  },
+];
+```
+
+**Code Splitting:**
+- Each page is lazy-loaded
+- Reduces initial bundle size
+- Faster time-to-interactive
+
+## UI Component Library (shadcn/ui)
+
+SIGSAHO uses shadcn/ui components:
+- Built on Radix UI primitives
+- Fully customizable (code is copied into project)
+- Styled with Tailwind CSS
+- Accessible by default (ARIA, keyboard navigation)
+
+```typescript
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead } from '@/components/ui/table';
+```
+
+## Data Table Pattern
+
+Complex tables use TanStack Table:
+
+```typescript
+import { useReactTable, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table';
+import { createColumnHelper } from '@tanstack/react-table';
+
+const columnHelper = createColumnHelper<Aircraft>();
+
+const columns = [
+  columnHelper.accessor('name', {
+    header: 'Name',
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor('registration', {
+    header: 'Registration',
+  }),
+  // ...
+];
+
+const table = useReactTable({
+  data: aircrafts,
+  columns,
+  getCoreRowModel: getCoreRowModel(),
+  getSortedRowModel: getSortedRowModel(),
+});
+```
+
+## Design System Integration
+
+The frontend implements the Figma design system:
+- **Typography**: Defined in Tailwind config
+- **Colors**: Custom color palette in CSS variables
+- **Spacing**: Tailwind's spacing scale
+- **Components**: shadcn/ui components styled to match design
+- **Icons**: Lucide React icon library
+
+**Figma Reference:**
+[Diseño UX/UI Hangar](https://www.figma.com/design/lTBaJen234WiWJmRP648lH/Dise%C3%B1o-UX-UI-Hangar)
+
+## Performance Optimizations
+
+### Code Splitting
+- Route-based splitting with `React.lazy`
+- Suspense boundaries for loading states
+
+### Query Optimization
+- Stale-while-revalidate strategy
+- Prefetching for predictable navigation
+- Query deduplication
+
+### Rendering Optimization
+- React 19 automatic memoization
+- Virtual scrolling for long lists
+- Pagination for large datasets
+
+### Asset Optimization
+- Vite's automatic code splitting
+- Tree shaking for unused code
+- CSS purging in production
+
+## Development Workflow
+
+### Adding a New Feature
+
+1. Create feature directory: `src/features/[feature-name]/`
+2. Define data schema: `data/schema.ts`
+3. Create API hooks: `hooks/use-fetch-[resource].ts`
+4. Build components: `components/[feature]-*.tsx`
+5. Create pages: `pages/[feature]-page.tsx`
+6. Register routes: `routes/AppRoutes.tsx`
+7. Add navigation: Update sidebar/header
+
+### Project Scripts
+
+```bash
+pnpm dev        # Start development server
+pnpm build      # Build for production
+pnpm preview    # Preview production build
+pnpm lint       # Run ESLint
+pnpm typecheck  # TypeScript type checking
+```
+
+## Testing Strategy
+
+(Future implementation)
+
+- **Unit Tests**: Vitest for hooks and utilities
+- **Component Tests**: React Testing Library
+- **E2E Tests**: Playwright for critical user flows
+
+## Key Takeaways
+
+- **Feature-Sliced Design**: Organize by business domain, not technical type
+- **MVVM Pattern**: Clear separation of data, logic, and presentation
+- **Schema-First**: Zod schemas as single source of truth
+- **Server State**: TanStack Query for all API data
+- **Type Safety**: TypeScript everywhere, inferred from schemas
+- **Composability**: Build complex UIs from simple, reusable components
+- **Code Splitting**: Lazy load routes for better performance
+- **Accessibility**: shadcn/ui ensures ARIA compliance

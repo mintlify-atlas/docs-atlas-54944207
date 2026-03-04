@@ -1,0 +1,176 @@
+---
+title: 'Aircraft API Overview'
+description: 'Comprehensive aircraft management system for tracking aircraft, maintenance, parts, and documentation'
+---
+
+## Introduction
+
+The Aircraft API provides a complete solution for managing aircraft operations, including:
+
+- **Aircraft Management**: Create and manage aircraft profiles with detailed specifications
+- **Document Management**: Upload and organize aircraft documentation (manuals, certificates, logs)
+- **Maintenance Tracking**: Schedule and track preventive and corrective maintenance
+- **Parts Inventory**: Monitor aircraft parts, life limits, and replacement schedules
+- **Flight Records**: Track flight hours, cycles, and fuel consumption
+
+## Authentication
+
+All Aircraft API endpoints require authentication via JWT cookies. Include the authentication cookie in your requests:
+
+```bash
+curl -X GET https://api.sigsaho.com/aircrafts \
+  --cookie "auth-token=YOUR_JWT_TOKEN"
+```
+
+## Base URL
+
+```
+https://api.sigsaho.com
+```
+
+## Core Resources
+
+### Aircraft
+Manage aircraft profiles including specifications, engine limits, weight & balance, and operational status.
+
+**Key Features:**
+- Multi-engine support (rotary and fixed wing)
+- Real-time maintenance status tracking
+- Automatic lifecycle hours and cycles calculation
+- Soft delete with audit trail
+
+### Aircraft Documents
+Store and manage aircraft-related documentation with support for 24+ document types.
+
+**Supported Document Types:**
+- Flight manuals and operations handbooks
+- Maintenance and structural repair manuals
+- Certificates (airworthiness, registration, noise)
+- Logbooks (aircraft, engine, propeller)
+- Service bulletins and airworthiness directives
+
+### Aircraft Services (Maintenance)
+Schedule and track maintenance activities with automatic hour-based triggers.
+
+**Service Types:**
+- `PREVENTIVE`: Scheduled preventive maintenance
+- `CORRECTIVE`: Unscheduled corrective maintenance
+- `MAINTENANCE`: Major maintenance events
+
+**Scheduling Options:**
+- By calendar date (`scheduled_at`)
+- By flight hours (`scheduled_at_hours`)
+- Combined date and hours scheduling
+
+### Aircraft Parts
+Track individual components with life limits, installation history, and automatic status monitoring.
+
+**Status Tracking:**
+- `ACTIVE`: Part operating within normal limits
+- `APPROACHING_LIMIT`: Near time/cycle limits
+- `NEAR_LIMIT`: Critical - approaching expiration
+- `OVERDUE`: Exceeded limits, requires immediate action
+- `DEPRECATED`: Removed from service
+
+## Common Patterns
+
+### Pagination
+
+All list endpoints support pagination with consistent parameters:
+
+<ParamField query="page" type="integer" default="1">
+  Page number (minimum: 1)
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Records per page (minimum: 1, maximum: 100)
+</ParamField>
+
+**Response Structure:**
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 45,
+    "totalPages": 5,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  }
+}
+```
+
+### Filtering and Search
+
+Most list endpoints support filtering by status and full-text search:
+
+<ParamField query="search" type="string">
+  Search across relevant text fields (name, registration, description, etc.)
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by status (values depend on resource type)
+</ParamField>
+
+### Soft Deletion
+
+All resources use soft deletion for audit compliance:
+
+- Deleted records are marked with `deleted_at` timestamp
+- Status automatically changes to `ELIMINATED` or `DEPRECATED`
+- Deleted records can be retrieved via dedicated history endpoints
+- Deletion is reversible at the database level
+
+## Role-Based Access Control
+
+Different endpoints require different permission levels:
+
+| Resource | Read Permission | Write Permission |
+|----------|----------------|------------------|
+| Aircraft | `despacho:read` | `despacho:write` |
+| Documents | `despacho:read` | `mantenimiento:write` |
+| Services | `mantenimiento:read` | `mantenimiento:write` |
+| Parts | `mantenimiento:read` | `mantenimiento:write` |
+| Records | `aircraft-records:read` | `aircraft-records:write` |
+
+## Rate Limits
+
+API rate limits are enforced per authentication token. Contact your system administrator for current limits.
+
+## Error Handling
+
+The API uses standard HTTP status codes:
+
+| Status Code | Description |
+|------------|-------------|
+| 200 | Success |
+| 201 | Created successfully |
+| 400 | Invalid request parameters |
+| 401 | Authentication required or invalid |
+| 403 | Insufficient permissions |
+| 404 | Resource not found |
+| 413 | File too large (>10MB) |
+| 422 | Unprocessable entity (business logic error) |
+| 500 | Internal server error |
+
+**Error Response Format:**
+```json
+{
+  "error": "Detailed error message"
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Aircraft Endpoints" icon="plane" href="/api/aircraft/endpoints">
+    Manage aircraft profiles and configurations
+  </Card>
+  <Card title="Document Management" icon="file-pdf" href="/api/aircraft/documents">
+    Upload and organize aircraft documentation
+  </Card>
+  <Card title="Maintenance Tracking" icon="wrench" href="/api/aircraft/maintenance">
+    Schedule and track maintenance services
+  </Card>
+</CardGroup>

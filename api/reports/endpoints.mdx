@@ -1,0 +1,426 @@
+---
+title: 'Report Generation'
+---
+
+The SIGSAHO API provides endpoints for generating PDF reports for various entities in the aeronautical management system. All reports are generated in PDF format and returned as binary data.
+
+## Authorization
+
+All report endpoints require:
+- Authentication via JWT cookie (`cookieAuth`)
+- Reports read permissions (`requireReportsRead`)
+
+---
+
+## Transfer Card
+
+<api method="GET" endpoint="/reports/transfers/{id}/card" />
+
+Generates an informational card for a transfer in PDF format.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the transfer to generate the report for
+</ParamField>
+
+### Response
+
+Returns a PDF buffer with the transfer information.
+
+**Headers:**
+- `Content-Type: application/pdf`
+- `Content-Disposition: attachment; filename=tarjeta-traslado-{id}.pdf`
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.sigsaho.com/reports/transfers/123/card" \
+  -H "Cookie: token=your_jwt_token" \
+  --output transfer-123.pdf
+```
+
+```javascript JavaScript
+fetch('https://api.sigsaho.com/reports/transfers/123/card', {
+  credentials: 'include',
+  headers: {
+    'Cookie': 'token=your_jwt_token'
+  }
+})
+  .then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'transfer-123.pdf';
+    a.click();
+  });
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 400 - Invalid ID
+{
+  "error": "ID de traslado inválido"
+}
+```
+
+```json 401 - Unauthorized
+{
+  "error": "No autorizado"
+}
+```
+
+```json 404 - Not Found
+{
+  "error": "Traslado no encontrado"
+}
+```
+
+```json 500 - Server Error
+{
+  "error": "Error al generar el reporte"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Medical Transfer Card
+
+<api method="GET" endpoint="/reports/medical-transfers/{id}/card" />
+
+Generates an informational card for a medical transfer in PDF format, including clinical data and patient information.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the medical transfer to generate the report for
+</ParamField>
+
+### Response
+
+Returns a PDF buffer with detailed medical transfer information.
+
+**Headers:**
+- `Content-Type: application/pdf`
+- `Content-Disposition: attachment; filename=tarjeta-traslado-medico-{id}.pdf`
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.sigsaho.com/reports/medical-transfers/456/card" \
+  -H "Cookie: token=your_jwt_token" \
+  --output medical-transfer-456.pdf
+```
+
+```javascript JavaScript
+fetch('https://api.sigsaho.com/reports/medical-transfers/456/card', {
+  credentials: 'include',
+  headers: {
+    'Cookie': 'token=your_jwt_token'
+  }
+})
+  .then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'medical-transfer-456.pdf';
+    a.click();
+  });
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 400 - Invalid ID
+{
+  "error": "ID de traslado médico inválido"
+}
+```
+
+```json 401 - Unauthorized
+{
+  "error": "No autorizado"
+}
+```
+
+```json 404 - Not Found
+{
+  "error": "Traslado médico no encontrado"
+}
+```
+
+```json 500 - Server Error
+{
+  "error": "Error al generar el reporte"
+}
+```
+
+</ResponseExample>
+
+---
+
+## User Technical File
+
+<api method="GET" endpoint="/reports/users/{id}/card" />
+
+Generates a technical file (expediente) for aeronautical personnel in PDF format, including personal data, documents, and training records.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the user to generate the technical file for
+</ParamField>
+
+### Response
+
+Returns a PDF buffer with the personnel technical file.
+
+**Headers:**
+- `Content-Type: application/pdf`
+- `Content-Disposition: attachment; filename=expediente-personal-{id}.pdf`
+
+**Report Contents:**
+- Personal information
+- Active and expired documents
+- Training history and certifications
+- Qualifications and licenses
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.sigsaho.com/reports/users/789/card" \
+  -H "Cookie: token=your_jwt_token" \
+  --output user-file-789.pdf
+```
+
+```javascript JavaScript
+fetch('https://api.sigsaho.com/reports/users/789/card', {
+  credentials: 'include',
+  headers: {
+    'Cookie': 'token=your_jwt_token'
+  }
+})
+  .then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'user-file-789.pdf';
+    a.click();
+  });
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 400 - Invalid ID
+{
+  "error": "ID de usuario inválido"
+}
+```
+
+```json 401 - Unauthorized
+{
+  "error": "No autorizado"
+}
+```
+
+```json 404 - Not Found
+{
+  "error": "Usuario no encontrado"
+}
+```
+
+```json 500 - Server Error
+{
+  "error": "Error al generar el expediente"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Aircraft Monthly Status Report
+
+<api method="GET" endpoint="/reports/aircraft/{id}/card" />
+
+Generates a monthly status report for an aircraft in PDF format, including general information, current month operational data, maintenance and inspections, and critical components.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the aircraft to generate the monthly report for
+</ParamField>
+
+### Response
+
+Returns a PDF buffer with the aircraft monthly status report.
+
+**Headers:**
+- `Content-Type: application/pdf`
+- `Content-Disposition: attachment; filename=reporte-aeronave-{id}.pdf`
+
+**Report Contents:**
+- General aircraft information (model, registration, serial number)
+- Current month operational data (flight hours, cycles, operations)
+- Maintenance schedule and completed inspections
+- Critical components status and upcoming limits
+- Airworthiness status
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://api.sigsaho.com/reports/aircraft/321/card" \
+  -H "Cookie: token=your_jwt_token" \
+  --output aircraft-report-321.pdf
+```
+
+```javascript JavaScript
+fetch('https://api.sigsaho.com/reports/aircraft/321/card', {
+  credentials: 'include',
+  headers: {
+    'Cookie': 'token=your_jwt_token'
+  }
+})
+  .then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'aircraft-report-321.pdf';
+    a.click();
+  });
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 400 - Invalid ID
+{
+  "error": "ID de aeronave inválido"
+}
+```
+
+```json 401 - Unauthorized
+{
+  "error": "No autorizado"
+}
+```
+
+```json 404 - Not Found
+{
+  "error": "Aeronave no encontrada"
+}
+```
+
+```json 500 - Server Error
+{
+  "error": "Error al generar el reporte"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Export Formats
+
+All report endpoints currently support **PDF** format only. The PDF files are:
+
+- Generated server-side using PDFMake library
+- Optimized for printing and archival
+- Include SIGSAHO branding and headers
+- Contain comprehensive data from the database
+
+### Future Formats
+
+Planned support for additional export formats:
+- Excel (`.xlsx`) for data analysis
+- CSV for data import/export
+- HTML for web preview
+
+## Common Use Cases
+
+### Bulk Report Generation
+
+```javascript
+// Generate reports for multiple transfers
+const transferIds = [101, 102, 103, 104];
+
+for (const id of transferIds) {
+  const response = await fetch(`https://api.sigsaho.com/reports/transfers/${id}/card`, {
+    credentials: 'include'
+  });
+  
+  const blob = await response.blob();
+  // Save or process blob
+}
+```
+
+### Scheduled Report Generation
+
+```javascript
+// Generate monthly aircraft reports for entire fleet
+const aircraftList = await fetchAircraftList();
+
+for (const aircraft of aircraftList) {
+  await generateMonthlyReport(aircraft.id);
+}
+
+async function generateMonthlyReport(aircraftId) {
+  const response = await fetch(
+    `https://api.sigsaho.com/reports/aircraft/${aircraftId}/card`,
+    { credentials: 'include' }
+  );
+  
+  const blob = await response.blob();
+  // Archive or email blob
+}
+```
+
+### Error Handling
+
+```javascript
+async function downloadReport(type, id) {
+  try {
+    const response = await fetch(
+      `https://api.sigsaho.com/reports/${type}/${id}/card`,
+      { credentials: 'include' }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error);
+    }
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}-${id}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to generate report:', error.message);
+    // Show user-friendly error message
+  }
+}
+```
+
+## Notes
+
+- All reports require valid authentication and appropriate permissions
+- Report generation is synchronous and may take 1-5 seconds depending on data complexity
+- PDF files are generated on-demand and not cached
+- File sizes typically range from 100KB to 2MB depending on content
+- Reports reflect current database state at time of generation

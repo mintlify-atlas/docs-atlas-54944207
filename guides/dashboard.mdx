@@ -1,0 +1,363 @@
+---
+title: "Dashboard Guide"
+description: "Navigate and utilize the SIGSAHO operational dashboard"
+---
+
+The Dashboard is your central hub for monitoring operational metrics, flight statistics, and urgent alerts in real-time. This guide explains each widget and how to use them effectively.
+
+## Overview
+
+The SIGSAHO Dashboard provides a comprehensive operational summary designed for quick decision-making. It features:
+
+- Real-time KPI metrics
+- Flight statistics with year-over-year comparisons
+- Recent flight records
+- Urgent alerts and notifications
+- Aircraft performance rankings
+- Attention distribution analytics
+
+<Note>
+The Dashboard uses lazy loading for optimal performance. Widgets load independently to ensure fast initial page rendering.
+</Note>
+
+## Accessing the Dashboard
+
+<Steps>
+  <Step title="Log in to SIGSAHO">
+    Authenticate with your username and password. See the [Authentication Guide](/guides/authentication) for details.
+  </Step>
+
+  <Step title="Automatic redirect">
+    Upon successful login, you'll be automatically redirected to the Dashboard (unless you were attempting to access a specific page).
+  </Step>
+
+  <Step title="Manual navigation">
+    You can always return to the Dashboard by:
+    - Clicking the "Dashboard" or "Panel de Control" link in the main navigation
+    - Clicking the SIGSAHO logo in the header
+    - Using the breadcrumb navigation
+  </Step>
+</Steps>
+
+## Dashboard Layout
+
+The Dashboard is organized into three main sections:
+
+### 1. Header Section
+Displays the current date and page title:
+- **Operational Summary** (Resumen Operativo)
+- Current date in Spanish format (e.g., "miércoles, 4 de marzo de 2026")
+
+### 2. KPI Metrics (Above the Fold)
+Four key performance indicators displayed as cards:
+- Total attentions/operations
+- Breakdown by operation type
+- Real-time statistics
+- Quick-access details via click-through dialogs
+
+### 3. Main Content Grid
+Split into two columns:
+
+**Left Column (8/12 width)** - Detailed Data
+- Flight statistics chart
+- Recent flights table
+
+**Right Column (4/12 width)** - Summaries and Alerts
+- Urgent alerts list
+- Attention distribution pie chart
+- Top aircraft ranking
+
+## Widget Guide
+
+### Total Attentions Metrics Widget
+
+<img src="/images/dashboard/kpi-metrics.png" alt="KPI Metrics Display" className="rounded-lg shadow-md" />
+
+Displays key performance indicators in a responsive grid.
+
+**Features:**
+- Real-time operation counts
+- Color-coded metrics by category
+- Click any KPI card to view detailed breakdowns
+- Modal dialog shows sub-type distributions
+
+**How to Use:**
+<Steps>
+  <Step title="View summary metrics">
+    The four KPI cards display at the top of the dashboard, showing total counts for different operation categories.
+  </Step>
+
+  <Step title="Access detailed breakdown">
+    Click on any KPI card to open a dialog showing:
+    - Sub-type distribution
+    - Individual counts
+    - Percentage breakdowns
+  </Step>
+
+  <Step title="Close the dialog">
+    Click the X button or click outside the dialog to return to the dashboard.
+  </Step>
+</Steps>
+
+<Tip>
+KPI metrics use a 5-minute cache. Data refreshes automatically in the background when the cache expires.
+</Tip>
+
+### Flight Statistics Widget
+
+Displays a comparative bar chart of monthly flight operations.
+
+**Features:**
+- Year-over-year comparison (current year vs previous year)
+- Interactive chart built with Recharts
+- Monthly granularity
+- Color-coded bars for easy comparison
+
+**How to Use:**
+1. View the chart to compare current year performance against last year
+2. Hover over bars to see exact values
+3. Analyze trends to identify operational patterns
+
+<Note>
+Flight statistics use a 30-minute cache due to their historical nature. Updates occur less frequently than real-time KPIs.
+</Note>
+
+### Last Flights Widget
+
+A table showing recent flight records with status indicators.
+
+**Features:**
+- Real-time flight data
+- Status badges (completed, in-progress, scheduled)
+- Sortable columns
+- Quick-view flight details
+
+**Columns:**
+- Flight number/identifier
+- Aircraft registration
+- Departure and arrival locations
+- Date and time
+- Flight status
+- Assigned crew
+
+**How to Use:**
+<Steps>
+  <Step title="Review recent flights">
+    Scan the table for recent operational activity.
+  </Step>
+
+  <Step title="Sort data">
+    Click column headers to sort by that field (date, status, aircraft, etc.).
+  </Step>
+
+  <Step title="View flight details">
+    Click on a row to navigate to the detailed flight record page.
+  </Step>
+</Steps>
+
+### Urgent Alerts Widget
+
+Prioritized list of critical events requiring attention.
+
+**Features:**
+- Real-time alert notifications
+- Priority-based sorting
+- Color-coded severity indicators
+- Direct links to related records
+
+**Alert Types:**
+- Maintenance due/overdue
+- Certification expirations
+- Flight delays or cancellations
+- System notifications
+
+**How to Use:**
+<Steps>
+  <Step title="Check for urgent items">
+    The widget displays alerts ordered by priority and time.
+  </Step>
+
+  <Step title="Review alert details">
+    Each alert shows:
+    - Type and severity
+    - Brief description
+    - Time/date
+    - Related entity (aircraft, user, flight)
+  </Step>
+
+  <Step title="Take action">
+    Click an alert to navigate to the relevant page for resolution.
+  </Step>
+</Steps>
+
+<Warning>
+Urgent alerts require immediate attention. Review this widget regularly to prevent operational issues.
+</Warning>
+
+### Total Attentions Distribution Widget
+
+Pie chart showing percentage distribution of operations by sector.
+
+**Features:**
+- Visual percentage breakdown
+- Interactive pie chart
+- Sector-based categorization
+- Legend with color mapping
+
+**How to Use:**
+1. View the pie chart to understand operational distribution
+2. Hover over segments to see exact percentages and counts
+3. Use insights to balance workload across sectors
+
+### Top Aircraft Widget
+
+Ranking of aircraft by flight count or operational hours.
+
+**Features:**
+- Sortable list by flights or hours
+- Aircraft registration and model
+- Performance metrics
+- Quick access to aircraft details
+
+**How to Use:**
+<Steps>
+  <Step title="Review aircraft rankings">
+    The widget displays aircraft sorted by usage metrics.
+  </Step>
+
+  <Step title="Identify high-usage aircraft">
+    Use this data to:
+    - Plan maintenance schedules
+    - Balance aircraft utilization
+    - Identify underutilized assets
+  </Step>
+
+  <Step title="Access aircraft details">
+    Click on an aircraft entry to view its complete operational record.
+  </Step>
+</Steps>
+
+<Tip>
+This widget is shared with the Statistics module, ensuring consistent data across the application.
+</Tip>
+
+## Performance and Caching
+
+The Dashboard uses intelligent caching to optimize performance:
+
+### Cache Strategy
+
+| Widget | Cache Duration | Update Frequency |
+|--------|---------------|------------------|
+| KPI Metrics | 5 minutes | Real-time updates |
+| Flight Statistics | 30 minutes | Historical data |
+| Recent Flights | 5 minutes | Near real-time |
+| Urgent Alerts | 2 minutes | Critical updates |
+| Attentions Distribution | 5 minutes | Operational data |
+| Top Aircraft | 30 minutes | Aggregate data |
+
+### Background Updates
+
+- Data refreshes silently in the background when cache expires
+- No page reload required for updates
+- Loading skeletons show during initial data fetch
+- Error states include retry buttons
+
+## Error Handling
+
+If a widget fails to load:
+
+1. **Error Boundary Display**: You'll see an error message specific to that widget
+2. **Other Widgets Continue**: Independent widgets continue functioning normally
+3. **Retry Option**: Click the "Retry" button to reload the failed widget
+4. **Full Page Reload**: If multiple widgets fail, try refreshing the entire page
+
+<Note>
+Error boundaries prevent a single widget failure from crashing the entire dashboard.
+</Note>
+
+## Responsive Design
+
+The Dashboard adapts to different screen sizes:
+
+### Desktop (≥1280px)
+- Two-column layout (8/12 + 4/12)
+- All widgets visible
+- Full chart interactivity
+
+### Tablet (768px - 1279px)
+- Single-column layout
+- Widgets stack vertically
+- Optimized touch targets
+
+### Mobile (&lt;768px)
+- Mobile-first responsive design
+- Compressed data tables
+- Swipeable charts
+- Bottom navigation padding
+
+## Keyboard Navigation
+
+The Dashboard supports keyboard navigation for accessibility:
+
+- `Tab` - Move between interactive elements
+- `Enter` - Activate buttons and links
+- `Escape` - Close modal dialogs
+- `Arrow Keys` - Navigate within charts and tables
+
+## Customization
+
+<Note>
+Widget customization is currently available only to administrators. Contact your system administrator to request dashboard layout changes.
+</Note>
+
+Future updates may include:
+- User-specific widget arrangement
+- Customizable date ranges for statistics
+- Favorite metrics pinning
+- Export dashboard snapshot
+
+## Best Practices
+
+### Daily Review
+1. Check **Urgent Alerts** first thing each shift
+2. Review **Recent Flights** for operational status
+3. Monitor **KPI Metrics** for performance tracking
+4. Analyze **Flight Statistics** for trend identification
+
+### Performance Monitoring
+- Use the Dashboard as your primary monitoring tool
+- Investigate anomalies shown in KPI metrics
+- Track month-over-month flight statistics trends
+- Address urgent alerts promptly
+
+### Data Interpretation
+- Compare current KPIs to historical averages
+- Look for patterns in flight statistics
+- Correlate alerts with operational changes
+- Use aircraft rankings for resource planning
+
+## Troubleshooting
+
+### Widget Not Loading
+1. Check your internet connection
+2. Click the retry button in the error state
+3. Refresh the entire page (Ctrl+R or Cmd+R)
+4. Clear browser cache if issues persist
+
+### Slow Performance
+1. Close unnecessary browser tabs
+2. Disable browser extensions temporarily
+3. Check network speed
+4. Contact IT if performance degrades significantly
+
+### Data Appears Outdated
+- Wait for automatic cache refresh (check cache durations above)
+- Manually refresh the page to force data reload
+- Verify system time is correct
+
+## Related Resources
+
+- [Reports Guide](/guides/reports) - Generate detailed operational reports
+- [Reports](/guides/reports) - Advanced analytics and filtering
+- [Data Export](/guides/data-export) - Export dashboard data for external analysis

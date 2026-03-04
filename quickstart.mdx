@@ -1,80 +1,509 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart Guide
+description: Get started with SIGSAHO in minutes - from login to your first operational task
 ---
 
-## Get started in three steps
+# Quickstart Guide
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will walk you through your first session with SIGSAHO, from logging in to navigating the dashboard and performing your first operational task.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Your system administrator should have provided you with login credentials. If you don't have an account yet, contact your admin.
 </Note>
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Login credentials (username or email + password)
+- Modern web browser (Chrome, Firefox, Safari, or Edge)
+- Stable internet connection
+- Your assigned role permissions
+
+---
+
+## Step 1: Access the Platform
+
+Navigate to your organization's SIGSAHO instance. The login screen will greet you with a clean, professional interface.
+
+<Steps>
+  <Step title="Open SIGSAHO">
+    Enter the URL provided by your administrator (e.g., `https://sigsaho.yourcompany.com`)
+  </Step>
+  <Step title="Enter Credentials">
+    Input your username or email and password
+  </Step>
+  <Step title="Optional: Remember Session">
+    Check "Mantener sesión activa" to stay logged in on trusted devices
+  </Step>
+</Steps>
+
+### Login Form Example
+
+The authentication system uses secure httpOnly cookies for session management:
+
+```tsx
+// SIGSAHO login form structure
+<Form>
+  <FormField name="identifier">
+    <Input 
+      placeholder="usuario o correo@hangar.com"
+      autoComplete="username"
+    />
+  </FormField>
+  
+  <FormField name="password">
+    <Input 
+      type="password"
+      placeholder="••••••••"
+      autoComplete="current-password"
+    />
+  </FormField>
+  
+  <FormField name="rememberMe">
+    <Checkbox /> Mantener sesión activa
+  </FormField>
+  
+  <Button type="submit">ACCEDER</Button>
+</Form>
+```
+
+<Warning>
+  If you see "Credenciales incorrectas" or "Usuario bloqueado", contact your administrator immediately.
+</Warning>
+
+---
+
+## Step 2: Explore the Dashboard
+
+Upon successful login, you'll land on the **Panel de Control** (Dashboard) - your operational command center.
+
+### Dashboard Components
+
+The dashboard is organized into several key sections:
+
+<CardGroup cols={2}>
+  <Card title="KPI Metrics" icon="chart-line">
+    Top row displays total attentions by type (Medical, Operational, Training)
+  </Card>
+  <Card title="Flight Statistics" icon="chart-column">
+    Year-over-year comparison of flight operations
+  </Card>
+  <Card title="Recent Flights" icon="list">
+    Table of latest flight entries with status indicators
+  </Card>
+  <Card title="Urgent Alerts" icon="bell">
+    Priority notifications for expiring certifications or maintenance
+  </Card>
+</CardGroup>
+
+### Dashboard Layout Example
+
+```tsx
+// Dashboard lazy-loaded widgets
+const Dashboard = () => {
+  return (
+    <div className="min-h-screen bg-slate-50/30">
+      {/* Header */}
+      <div className="space-y-4">
+        <PageBreadcrumb pageTitle="Panel de Control" />
+        <h1>Resumen Operativo</h1>
+      </div>
+
+      {/* KPIs - Above the fold */}
+      <Suspense fallback={<WidgetSkeleton />}>
+        <TotalAttentionsMetricsWidget />
+      </Suspense>
+
+      {/* Two-column layout */}
+      <div className="grid xl:grid-cols-12 gap-6">
+        {/* Left column - Detailed data */}
+        <section className="xl:col-span-8">
+          <FlightStatsWidget />
+          <LastFlightsWidget />
+        </section>
+
+        {/* Right column - Summaries & alerts */}
+        <aside className="xl:col-span-4">
+          <UrgentAlertsWidget />
+          <TotalAttentionsWidget />
+          <TopAircraftWidget />
+        </aside>
+      </div>
+    </div>
+  );
+};
+```
+
+<Note>
+  Widgets load independently using React Suspense - if one section has an error, the rest of the dashboard continues to function.
+</Note>
+
+---
+
+## Step 3: Navigate the Sidebar
+
+The collapsible sidebar provides access to all modules based on your role:
+
+### Module Structure
+
+<AccordionGroup>
+  <Accordion title="Panel de Control" icon="gauge">
+    - **Dashboard** - Operational overview and KPIs
+    - **Estadísticas** - Detailed statistical analysis
+    - **Búsqueda** - Advanced flight search
+  </Accordion>
+  
+  <Accordion title="Traslados" icon="route">
+    - **Traslados Médicos** - Medical evacuation flights
+    - **Traslados Generales** - Operational transfers
+    - **Nuevo Traslado** - Create new flight entry
+  </Accordion>
+  
+  <Accordion title="Despacho" icon="plane">
+    - **Flota** - Aircraft management
+    - **Servicios** - Maintenance scheduling
+    - **Componentes** - Parts inventory
+  </Accordion>
+  
+  <Accordion title="Control Aéreo" icon="tower-control">
+    - **METAR/TAF** - Weather information
+    - **Peso y Balance** - Weight & balance calculator
+  </Accordion>
+  
+  <Accordion title="Seguimiento" icon="clipboard-check">
+    - **Personal Técnico** - Crew management
+    - **Capacitaciones** - Training records
+    - **Alertas** - Compliance notifications
+  </Accordion>
+  
+  <Accordion title="Configuración" icon="gear">
+    - **Usuarios** - User management (admin only)
+    - **Aeronaves** - Aircraft settings (admin only)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Step 4: Your First Task
+
+Let's complete a common task based on your role. Here are quickstart guides for each role:
+
+<Tabs>
+  <Tab title="Dispatcher">
+    ### Check Aircraft Status
+    
+    <Steps>
+      <Step title="Navigate to Fleet">
+        Click **Despacho** → **Flota** in the sidebar
+      </Step>
+      <Step title="Select Aircraft">
+        Choose an aircraft (e.g., Bell-407, Cessna-208)
+      </Step>
+      <Step title="Review Details">
+        View current flight hours, maintenance status, and next service due
+      </Step>
+    </Steps>
+
+    ```typescript
+    // Aircraft dispatch data structure
+    interface AircraftStatus {
+      matricula: string;        // Registration (e.g., "XA-UPQ")
+      modelo: string;           // Model
+      horas_totales: number;    // Total flight hours
+      proximo_servicio: string; // Next maintenance date
+      estado: 'OPERATIVA' | 'MANTENIMIENTO' | 'INACTIVA';
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Medical Transfer Editor">
+    ### Log a Medical Transfer
+    
+    <Steps>
+      <Step title="Create New Transfer">
+        Go to **Traslados** → **Nuevo Traslado**
+      </Step>
+      <Step title="Select Transfer Type">
+        Choose "Traslado Médico"
+      </Step>
+      <Step title="Fill Required Fields">
+        - Patient information (name, age, condition)
+        - Origin and destination
+        - Aircraft and crew assignment
+        - Flight times (ETD, ETA)
+      </Step>
+      <Step title="Submit">
+        Click "Guardar" to create the flight record
+      </Step>
+    </Steps>
+
+    <Warning>
+      Medical transfers require additional patient data - ensure HIPAA/privacy compliance per your organization's policies.
+    </Warning>
+  </Tab>
+  
+  <Tab title="Maintenance Team">
+    ### Record an Inspection
+    
+    <Steps>
+      <Step title="Access Services">
+        Navigate to **Despacho** → **Servicios**
+      </Step>
+      <Step title="New Inspection">
+        Click "Nueva Inspección"
+      </Step>
+      <Step title="Enter Details">
+        - Aircraft registration
+        - Inspection type (50h, 100h, annual)
+        - Findings and actions taken
+        - Next service due
+      </Step>
+      <Step title="Save">
+        Submit the inspection report
+      </Step>
+    </Steps>
+
+    ```typescript
+    // Inspection form example
+    interface InspectionRecord {
+      aircraft_id: number;
+      service_type: '50_HORAS' | '100_HORAS' | 'ANUAL';
+      current_hours: number;
+      findings: string;
+      next_service_hours: number;
+      inspector_id: number;
+      date_completed: Date;
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Training Coordinator">
+    ### Check Crew Certifications
+    
+    <Steps>
+      <Step title="Open Personnel">
+        Click **Seguimiento** → **Personal Técnico**
+      </Step>
+      <Step title="Review Certifications">
+        View crew member profiles with certification expiry dates
+      </Step>
+      <Step title="Check Alerts">
+        Visit **Seguimiento** → **Alertas** for upcoming expirations
+      </Step>
+    </Steps>
+
+    <Note>
+      The system automatically generates alerts 30, 15, and 7 days before certification expiry.
+    </Note>
+  </Tab>
+</Tabs>
+
+---
+
+## Step 5: Understand Role-Based Access
+
+SIGSAHO uses Role-Based Access Control (RBAC) to ensure users only access what they need:
+
+### Access Control Example
+
+```typescript
+// Protected route configuration
+const router = createBrowserRouter([
+  {
+    path: 'dashboard',
+    element: (
+      <RequireRole roles={ACCESS_STATS}>
+        <Dashboard />
+      </RequireRole>
+    )
+  },
+  {
+    path: 'configuracion',
+    element: (
+      <RequireRole roles={[SystemRoles.ADMINISTRADOR]}>
+        <UsersSettingsPage />
+      </RequireRole>
+    )
+  }
+]);
+```
+
+### Role Access Matrix
+
+| Module | Admin | Director | Dispatcher | Maintenance | Medical Editor | Training |
+|--------|-------|----------|------------|-------------|----------------|----------|
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Fleet Management | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Maintenance | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Medical Transfers | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Personnel Training | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Configuration | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+<Warning>
+  If you try to access a module without proper permissions, you'll be redirected to an "Unauthorized" page. Contact your admin to request access.
+</Warning>
+
+---
+
+## Step 6: Data Fetching & Real-Time Updates
+
+SIGSAHO uses TanStack Query for efficient data management:
+
+### Smart Caching Example
+
+```typescript
+// Dashboard metrics hook
+export const useDashboardMetrics = () => {
+  return useQuery({
+    queryKey: ['dashboard', 'metrics'],
+    queryFn: () => dashboardService.getMetrics(),
+    staleTime: 5 * 60 * 1000,  // 5 minutes
+    refetchOnWindowFocus: true, // Refresh when tab regains focus
+  });
+};
+```
+
+**Benefits:**
+- Data cached for 5 minutes to reduce server load
+- Automatic background refresh when cache expires
+- Instant updates when switching between pages
+- Optimistic UI updates for better UX
+
+---
+
+## Common Workflows
+
+### Daily Operations Checklist
+
+<Steps>
+  <Step title="Morning Review">
+    - Check dashboard for urgent alerts
+    - Review flight schedule for the day
+    - Verify aircraft maintenance status
+  </Step>
+  <Step title="Flight Operations">
+    - Log new transfers as they occur
+    - Update flight times (actual departure/arrival)
+    - Record crew assignments
+  </Step>
+  <Step title="End of Day">
+    - Complete pending flight entries
+    - Review maintenance logs
+    - Check for tomorrow's alerts
+  </Step>
+</Steps>
+
+### Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Always Log Out" icon="right-from-bracket">
+    Click your profile → "Cerrar Sesión" when done, especially on shared computers
+  </Card>
+  <Card title="Use Search" icon="magnifying-glass">
+    Press `Ctrl+K` (or `Cmd+K` on Mac) to open the command palette for quick navigation
+  </Card>
+  <Card title="Check Notifications" icon="bell">
+    Review the alerts widget daily for expiring certifications or maintenance
+  </Card>
+  <Card title="Complete Forms Fully" icon="circle-check">
+    All required fields (marked with *) must be filled - the system validates before submission
+  </Card>
+</CardGroup>
+
+---
+
+## Authentication & Session Management
+
+### How Sessions Work
+
+SIGSAHO uses a secure cookie-based authentication system:
+
+```typescript
+// Backend: Setting authentication cookies
+const cookieOptions = {
+  httpOnly: true,              // Not accessible via JavaScript
+  secure: true,                // HTTPS only
+  sameSite: 'strict',          // CSRF protection
+  maxAge: 15 * 60 * 1000       // 15 minutes
+};
+
+res.cookie('accessToken', token, cookieOptions);
+```
+
+**Security Features:**
+- Tokens stored in httpOnly cookies (immune to XSS attacks)
+- Automatic token refresh every 15 minutes
+- Session expires after inactivity
+- All API requests authenticated via cookies
+
+<Note>
+  You won't see tokens in browser DevTools or localStorage - this is by design for maximum security.
+</Note>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="I can't log in">
+    - Verify username/email and password
+    - Ensure Caps Lock is off
+    - Try clearing browser cache and cookies
+    - Contact your administrator to verify account status
+  </Accordion>
+  
+  <Accordion title="I see 'Unauthorized' on a page">
+    - You don't have permission for that module
+    - Contact your admin to request the necessary role
+    - Check with your supervisor if you should have access
+  </Accordion>
+  
+  <Accordion title="Widgets won't load">
+    - Check your internet connection
+    - Refresh the page (Ctrl+R or Cmd+R)
+    - Try logging out and back in
+    - Contact IT if the issue persists
+  </Accordion>
+  
+  <Accordion title="Form won't submit">
+    - Look for red error messages below fields
+    - Ensure all required fields (*) are filled
+    - Verify data formats (dates, numbers, emails)
+    - Check console (F12) for validation errors
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+Now that you're familiar with the basics:
+
+<CardGroup cols={2}>
+  <Card title="Master Your Module" icon="book-open" href="/modules">
+    Dive deep into documentation for your specific role
+  </Card>
+  <Card title="Learn Advanced Features" icon="wand-magic-sparkles" href="/advanced">
+    Explore filters, exports, and batch operations
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Integrate SIGSAHO with other systems (admin only)
+  </Card>
+  <Card title="Mobile Guide" icon="mobile" href="/mobile">
+    Tips for using SIGSAHO on tablets and phones
+  </Card>
+</CardGroup>
+
+---
+
+## Get Support
+
+Need help beyond this guide?
+
+- **In-App:** Click the help icon (?) in the top navigation
+- **Documentation:** Search the docs for your specific module
+- **Administrator:** Contact your system admin for account/permission issues
+- **Technical Support:** Reach out to your IT department for bugs or errors
+
+Happy flying! 🚁

@@ -1,0 +1,235 @@
+---
+title: 'Login'
+api: 'POST /auth/login'
+description: 'Authenticate a user with username/email and password'
+---
+
+## Endpoint
+
+```
+POST /auth/login
+```
+
+Authenticates a user using their username or email and password. On successful authentication, sets httpOnly cookies with access and refresh tokens.
+
+<Note>
+  **Rate Limiting:** This endpoint is limited to **5 attempts per 15 minutes per IP address** to prevent brute-force attacks.
+</Note>
+
+## Request Body
+
+<ParamField body="identifier" type="string" required>
+  Username or email address of the user
+  - Minimum length: 3 characters
+  - Maximum length: 255 characters
+  - Case-insensitive for email addresses
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password
+  - Minimum length: 1 character
+  - Maximum length: 255 characters
+</ParamField>
+
+## Response
+
+<ResponseField name="message" type="string">
+  Success message confirming login
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Authenticated user information
+  
+  <Expandable title="user properties">
+    <ResponseField name="id" type="number">
+      Unique user identifier
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      User's first name
+    </ResponseField>
+    
+    <ResponseField name="last_name" type="string">
+      User's paternal last name
+    </ResponseField>
+    
+    <ResponseField name="second_last_name" type="string">
+      User's maternal last name (optional)
+    </ResponseField>
+    
+    <ResponseField name="username" type="string">
+      Unique username
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      User's email address
+    </ResponseField>
+    
+    <ResponseField name="roles" type="array">
+      Array of role objects assigned to the user
+      
+      <Expandable title="role properties">
+        <ResponseField name="id" type="number">
+          Role identifier
+        </ResponseField>
+        
+        <ResponseField name="name" type="string">
+          Role name (e.g., "admin", "user", "pilot")
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="login_access" type="boolean">
+      Whether the user has login access to the system
+    </ResponseField>
+    
+    <ResponseField name="status" type="string">
+      User account status ("ACTIVE" or "DISABLED")
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Cookies Set
+
+On successful login, the following httpOnly cookies are automatically set:
+
+| Cookie Name | Value | Expiry | Attributes |
+|-------------|-------|--------|------------|
+| `accessToken` | JWT access token | 15 minutes | httpOnly, secure (prod), sameSite=strict |
+| `refreshToken` | JWT refresh token | 7 days | httpOnly, secure (prod), sameSite=strict |
+
+## Request Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.sigsaho.com/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "identifier": "jperez",
+    "password": "MySecure@Pass123"
+  }'
+```
+
+```javascript JavaScript (Fetch)
+const response = await fetch('https://api.sigsaho.com/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  credentials: 'include', // Important: Include cookies
+  body: JSON.stringify({
+    identifier: 'jperez',
+    password: 'MySecure@Pass123'
+  })
+});
+
+const data = await response.json();
+console.log(data.user);
+```
+
+```python Python (Requests)
+import requests
+
+url = "https://api.sigsaho.com/auth/login"
+payload = {
+    "identifier": "jperez",
+    "password": "MySecure@Pass123"
+}
+
+response = requests.post(url, json=payload)
+data = response.json()
+print(data['user'])
+
+# Cookies are automatically stored in the session
+```
+</CodeGroup>
+
+## Response Examples
+
+<CodeGroup>
+```json 200 Success
+{
+  "message": "Login exitoso",
+  "user": {
+    "id": 1,
+    "name": "Juan",
+    "last_name": "Pérez",
+    "second_last_name": "García",
+    "username": "jperez",
+    "email": "juan.perez@example.com",
+    "roles": [
+      {
+        "id": 1,
+        "name": "admin"
+      },
+      {
+        "id": 2,
+        "name": "pilot"
+      }
+    ],
+    "login_access": true,
+    "status": "ACTIVE"
+  }
+}
+```
+
+```json 401 Invalid Credentials
+{
+  "error": "Credenciales inválidas"
+}
+```
+
+```json 400 Validation Error
+{
+  "error": "Se requiere identifier (username/email) y password"
+}
+```
+
+```json 429 Rate Limit Exceeded
+{
+  "error": "Demasiados intentos de login - Rate limit excedido (5/15min)"
+}
+```
+</CodeGroup>
+
+## Error Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Login successful, cookies set |
+| 400 | Invalid request body or missing required fields |
+| 401 | Invalid credentials (username/email or password incorrect) |
+| 429 | Rate limit exceeded (too many login attempts) |
+
+<Warning>
+  **Security Best Practices:**
+  - Never log or expose passwords in your application
+  - Always use HTTPS in production to protect credentials in transit
+  - Store tokens securely (the API uses httpOnly cookies for this)
+  - Implement proper error handling without exposing sensitive information
+</Warning>
+
+## Implementation Details
+
+The login endpoint performs the following operations:
+
+1. **Validates** the request body against the login schema (src/schemas/auth.schema.ts:32)
+2. **Authenticates** the user via AuthService.login() (src/controllers/auth.controller.ts:20)
+3. **Generates** JWT access token (15 minutes expiry) and refresh token (7 days expiry)
+4. **Sets** httpOnly cookies with appropriate security flags
+5. **Returns** the user object with roles
+
+<Info>
+  The identifier field accepts both username and email for convenience. The system automatically determines which one is provided and performs the appropriate lookup.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Refresh Token" icon="rotate" href="/api/auth/refresh">
+    Learn how to refresh expired access tokens
+  </Card>
+  <Card title="Protected Endpoints" icon="shield" href="/api/overview">
+    Use your access token to call protected endpoints
+  </Card>
+</CardGroup>

@@ -1,0 +1,253 @@
+---
+title: Database Migrations
+description: Manage database schema and seed data using TypeORM migrations
+---
+
+## Overview
+
+SIGSAHO uses TypeORM migrations to manage database schema evolution and seed data. Migrations ensure consistent database structure across environments and enable version-controlled schema changes.
+
+## Migration Commands
+
+All migration commands use the TypeORM CLI via npm scripts defined in `package.json`.
+
+### Show migration status
+
+View pending and executed migrations:
+
+```bash
+pnpm migration:show
+```
+
+This displays:
+- Migrations already run (with timestamps)
+- Pending migrations waiting to be executed
+
+### Run pending migrations
+
+Execute all pending migrations:
+
+```bash
+pnpm migration:run
+```
+
+Migrations run in chronological order based on timestamp prefixes. Each migration executes in its own transaction (`migrationsTransactionMode: 'each'`).
+
+### Run migrations without executing SQL
+
+Mark migrations as executed without running SQL:
+
+```bash
+pnpm migration:run:fake
+```
+
+<Warning>
+Only use fake migrations when manually applying schema changes. This marks migrations as run without executing them, which can cause schema inconsistencies.
+</Warning>
+
+### Revert last migration
+
+Rollback the most recently executed migration:
+
+```bash
+pnpm migration:revert
+```
+
+<Warning>
+This operation is destructive and may result in data loss. Always backup your database before reverting migrations in production.
+</Warning>
+
+### Generate a new migration
+
+Automatically generate a migration from entity changes:
+
+```bash
+pnpm migration:generate src/migrations/DescriptiveName
+```
+
+TypeORM compares current entities against the database schema and generates the necessary SQL changes.
+
+### Create empty migration
+
+Create a blank migration file for manual SQL:
+
+```bash
+pnpm migration:create src/migrations/CustomMigrationName
+```
+
+## Migration Architecture
+
+Migrations are located in `/home/daytona/workspace/source/back/src/migrations/` and follow this naming convention:
+
+```
+{timestamp}-{DescriptiveName}.ts
+```
+
+### Existing Migrations
+
+The system includes these migrations in execution order:
+
+1. **1771397273984-InitialSchema.ts** - Complete database schema
+2. **1771787268628-SeedRolesAndAdmin.ts** - Initial roles and admin user
+3. **1771787328628-SeedInitialAircrafts.ts** - Initial aircraft fleet
+4. **1771787388628-SeedStaffUsers.ts** - Aeronautical personnel
+5. **1772872000000-SeedGeographicData.ts** - States, regions, municipalities, localities
+6. **1771875666542-SeedMedicalTransfers.ts** - 354 historical medical transfers
+7. **1772100000000-AddTransferStatsIndexes.ts** - Performance indexes for transfers
+8. **1772200000000-AddAircraftPartsIndexes.ts** - Performance indexes for aircraft parts
+9. **1772410929712-ModuleMantaince.ts** - Maintenance module schema
+10. **1772418865656-AddHoursBefore_LastMantt_Aircraft.ts** - Aircraft maintenance tracking
+11. **1772428576911-CreateAuditLogTable.ts** - Audit log table for compliance
+
+## Database Initialization Modes
+
+SIGSAHO supports two initialization modes controlled by the `API_DB_SYNC` environment variable:
+
+### Development Mode (API_DB_SYNC=true)
+
+```bash
+API_DB_SYNC=true
+```
+
+- **synchronize**: `true` - TypeORM auto-syncs schema on startup
+- **migrationsRun**: `false` - Migrations don't run automatically
+- **Use case**: Active development with frequent entity changes
+- **Run migrations manually**: `pnpm migration:run`
+
+### Production Mode (API_DB_SYNC=false)
+
+```bash
+API_DB_SYNC=false
+```
+
+- **synchronize**: `false` - TypeORM doesn't modify schema
+- **migrationsRun**: `true` - Migrations run automatically on startup
+- **Use case**: Production, staging, or fresh database initialization
+
+## Fresh Database Setup
+
+<Steps>
+  <Step title="Set production mode">
+    In `.env`, configure:
+    
+    ```bash
+    API_DB_SYNC=false
+    ```
+  </Step>
+
+  <Step title="Start the application">
+    ```bash
+    pnpm dev
+    ```
+    
+    TypeORM will execute all migrations in order:
+    - Initial schema creation
+    - Seed roles and admin user
+    - Seed initial aircraft fleet
+    - Seed staff users
+    - Seed geographic data (states, regions, municipalities)
+    - Seed historical medical transfers
+    - Add performance indexes
+    - Create maintenance module
+    - Add audit log table
+  </Step>
+
+  <Step title="Verify migration completion">
+    ```bash
+    pnpm migration:show
+    ```
+    
+    All migrations should show as executed.
+  </Step>
+
+  <Step title="Switch to development mode (optional)">
+    For active development, update `.env`:
+    
+    ```bash
+    API_DB_SYNC=true
+    ```
+  </Step>
+</Steps>
+
+## Migration Transaction Strategy
+
+Migrations use `migrationsTransactionMode: 'each'`:
+
+- Each migration runs in its own transaction
+- If a migration fails, previous migrations remain committed
+- Allows retrying failed migrations without losing progress
+- Contrast with `'all'` mode which rolls back everything on failure
+
+## Data Source Configuration
+
+Migration behavior is configured in `/home/daytona/workspace/source/back/src/config/data_source.ts:43-56`:
+
+```typescript
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: CONFIG.dbHost,
+  port: Number(CONFIG.dbPort),
+  username: CONFIG.dbUser,
+  password: CONFIG.dbPassword,
+  database: CONFIG.dbName,
+  synchronize: isDevelopment && Boolean(CONFIG.apiDbSync),
+  logging: true,
+  entities: ['src/entities/*.entity.ts'],
+  migrations: ['src/migrations/*.ts'],
+  migrationsRun: !Boolean(CONFIG.apiDbSync),
+  migrationsTransactionMode: 'each',
+});
+```
+
+## Best Practices
+
+### Never modify executed migrations
+
+Once a migration runs in production, never alter it. Create a new migration instead.
+
+### Test migrations before production
+
+1. Run migrations on a staging database
+2. Verify data integrity
+3. Test rollback with `migration:revert`
+4. Only then deploy to production
+
+### Backup before migration
+
+Always backup production databases before running migrations:
+
+```bash
+docker exec db-postgres-servicio-hangar pg_dump -U postgres estadistica-hangar > pre-migration-backup.sql
+```
+
+### Use descriptive names
+
+Migration names should clearly describe the change:
+
+- ✅ `AddUserEmailVerificationColumn`
+- ✅ `CreateAuditLogTable`
+- ❌ `UpdateDatabase`
+- ❌ `FixBug`
+
+## Troubleshooting
+
+### Migration fails mid-execution
+
+Due to `each` transaction mode, previous migrations are committed. Fix the failing migration and run `pnpm migration:run` again.
+
+### Schema out of sync
+
+If entities don't match database schema:
+
+1. Set `API_DB_SYNC=false`
+2. Generate migration: `pnpm migration:generate src/migrations/SyncSchema`
+3. Review generated SQL
+4. Run migration: `pnpm migration:run`
+
+### Duplicate migration execution
+
+TypeORM tracks executed migrations in the `migrations` table. Check:
+
+```sql
+SELECT * FROM migrations ORDER BY timestamp;
+```

@@ -1,0 +1,420 @@
+---
+title: Crew Management
+description: Manage aviation personnel, certifications, training records, and documentation
+---
+
+The Crew Management module provides comprehensive tools for managing all aviation personnel, their qualifications, certifications, training records, and compliance documentation.
+
+## Overview
+
+Crew Management ensures your aviation team remains qualified, current, and compliant with all regulatory requirements:
+
+<CardGroup cols={2}>
+  <Card title="Personnel Records" icon="user">
+    Maintain complete profiles for all crew members with roles and qualifications
+  </Card>
+  <Card title="Certifications" icon="certificate">
+    Track licenses, medical certificates, and regulatory compliance
+  </Card>
+  <Card title="Training Management" icon="graduation-cap">
+    Manage training programs, courses, and certification requirements
+  </Card>
+  <Card title="Automated Alerts" icon="bell">
+    Receive automatic notifications for expiring documents and certifications
+  </Card>
+</CardGroup>
+
+## Personnel Types
+
+The system supports various types of aviation personnel:
+
+- **Pilots**: Captains, first officers, and flight instructors
+- **Medical Personnel**: Flight doctors, nurses, and paramedics
+- **Maintenance Staff**: Aircraft mechanics and inspectors
+- **Support Staff**: Dispatchers, operations coordinators
+- **Administrative**: Management and oversight personnel
+
+## Adding New Personnel
+
+Add new crew members using the multi-step personnel wizard:
+
+<Steps>
+  <Step title="Access Personnel Management">
+    Navigate to the Tracking module and select "Personnel" from the menu.
+  </Step>
+  <Step title="Start New Personnel Wizard">
+    Click "Add Personnel" to open the creation wizard.
+  </Step>
+  <Step title="Step 1: General Information">
+    Enter basic personnel data:
+    - Full name (first name, last name, second last name)
+    - Email address (must be unique)
+    - Phone number
+    - Date of birth
+    - Weight (for weight and balance calculations)
+  </Step>
+  <Step title="Assign Position and Roles">
+    Select the crew member's:
+    - Position (Pilot, Medical Staff, Mechanic, etc.)
+    - System roles (determines access permissions)
+    - License number (if applicable)
+  </Step>
+  <Step title="Configure Login Access">
+    Choose whether this person will have system login access:
+    - If yes, create username and password
+    - If no, they'll appear in crew selection but cannot log in
+  </Step>
+  <Step title="Step 2: Documentation">
+    Upload required documentation:
+    - Professional licenses
+    - Medical certificates
+    - Insurance documents
+    - Identification documents
+  </Step>
+  <Step title="Set Document Expiration Dates">
+    For each document, set the expiration date to enable automatic alerts.
+  </Step>
+  <Step title="Step 3: Training Assignment">
+    Assign initial training courses:
+    - Select applicable training programs
+    - Set target completion dates
+    - Mark any pre-completed certifications
+  </Step>
+  <Step title="Review and Save">
+    Review all information and save to create the personnel record.
+  </Step>
+</Steps>
+
+## Personnel Profiles
+
+Each crew member has a comprehensive profile with multiple sections:
+
+### Profile Overview
+
+The main profile displays:
+
+- **Header Information**: Name, position, status, and contact details
+- **Quick Stats**: Active documents, pending trainings, flight hours
+- **Status Badge**: Visual indicator of overall compliance status
+
+### Documents Tab
+
+View and manage all personnel documentation:
+
+- **License Documents**: Professional licenses and certifications
+- **Medical Certificates**: Current medical clearance status
+- **Training Certificates**: Completed training documentation
+- **Other Documents**: Insurance, identification, and miscellaneous files
+
+**Document Management Actions:**
+- Upload new documents
+- Download existing documents
+- Set/update expiration dates
+- Delete obsolete documents
+- View document history
+
+### Training Tab
+
+Track all training and certification activities:
+
+- **Active Trainings**: Currently in-progress courses
+- **Completed Trainings**: Historical certification records
+- **Upcoming Requirements**: Scheduled or required future training
+- **Certification Status**: Overall training compliance status
+
+### Flight History Tab
+
+For flight crew, view complete flight participation:
+
+- Date and time of each flight
+- Aircraft flown
+- Role in the flight (Pilot in Command, First Officer, etc.)
+- Flight duration
+- Cumulative flight hours
+- Recent flight activity
+
+## Training and Certifications
+
+### Creating a Training Program
+
+<Steps>
+  <Step title="Access Training Management">
+    Navigate to Tracking > Capacitations.
+  </Step>
+  <Step title="Create New Training">
+    Click "Create Training Program" to open the training form.
+  </Step>
+  <Step title="Enter Training Details">
+    Fill in the program information:
+    - Training name and code
+    - Description and objectives
+    - Duration (hours or days)
+    - Training type (Initial, Recurrent, Specialized)
+  </Step>
+  <Step title="Set Requirements">
+    Define training requirements:
+    - Applicable roles (Pilot, Medical, Maintenance)
+    - Prerequisites
+    - Recurrency period (if applicable)
+  </Step>
+  <Step title="Add Training Materials">
+    Upload course materials:
+    - Training manuals
+    - Presentation slides
+    - Reference documents
+    - Exam materials
+  </Step>
+  <Step title="Save Training Program">
+    Save the training to make it available for assignment.
+  </Step>
+</Steps>
+
+### Assigning Training to Personnel
+
+There are two ways to assign training:
+
+**Option 1: From the Training Program**
+
+<Steps>
+  <Step title="Open Training Program">
+    Navigate to the specific training program.
+  </Step>
+  <Step title="Assign Users">
+    Click "Assign Users" to open the assignment dialog.
+  </Step>
+  <Step title="Select Personnel">
+    Choose one or more personnel to assign this training.
+  </Step>
+  <Step title="Set Dates">
+    Define the start date and target completion date.
+  </Step>
+  <Step title="Confirm Assignment">
+    Save to assign the training to the selected personnel.
+  </Step>
+</Steps>
+
+**Option 2: From the Personnel Profile**
+
+<Steps>
+  <Step title="Open Personnel Profile">
+    Navigate to the crew member's profile.
+  </Step>
+  <Step title="Go to Training Tab">
+    Select the "Training" tab.
+  </Step>
+  <Step title="Assign Training">
+    Click "Assign Training" and select from available programs.
+  </Step>
+  <Step title="Set Parameters">
+    Set start and completion dates for the training.
+  </Step>
+  <Step title="Confirm">
+    Save the assignment to add it to the person's training record.
+  </Step>
+</Steps>
+
+### Completing Training
+
+<Steps>
+  <Step title="Locate Training Record">
+    Find the in-progress training in the personnel's training tab.
+  </Step>
+  <Step title="Complete Training">
+    Click "Complete Training" to open the completion dialog.
+  </Step>
+  <Step title="Enter Completion Details">
+    Fill in the completion information:
+    - Actual completion date
+    - Final score or grade (if applicable)
+    - Instructor name
+    - Notes or comments
+  </Step>
+  <Step title="Upload Certificate">
+    Upload the official training certificate or completion document.
+  </Step>
+  <Step title="Submit Completion">
+    Save to mark the training as completed.
+  </Step>
+</Steps>
+
+<Note>
+For recurrent training, the system will automatically calculate and schedule the next required training date based on the recurrency period.
+</Note>
+
+## Document Expiration Management
+
+### Setting Up Automatic Alerts
+
+The system can automatically alert you when documents are approaching expiration:
+
+<Steps>
+  <Step title="Access Alert Settings">
+    Navigate to Tracking > Alerts > Settings.
+  </Step>
+  <Step title="Configure Alert Thresholds">
+    Set the advance warning periods:
+    - Days before expiration to send first warning (e.g., 90 days)
+    - Days before expiration to send urgent warning (e.g., 30 days)
+    - Days before expiration to send critical warning (e.g., 7 days)
+  </Step>
+  <Step title="Set Notification Methods">
+    Choose how alerts are delivered:
+    - In-system notifications
+    - Email notifications
+    - SMS notifications (if configured)
+  </Step>
+  <Step title="Define Recipients">
+    Specify who receives alerts:
+    - The crew member themselves
+    - Their direct supervisor
+    - Administrative personnel
+    - Operations managers
+  </Step>
+  <Step title="Save Settings">
+    Confirm the alert configuration to activate automatic monitoring.
+  </Step>
+</Steps>
+
+### Viewing Alerts
+
+Access the Alerts Dashboard to see all current alerts:
+
+- **Critical Alerts**: Documents expired or expiring within 7 days (red)
+- **Urgent Alerts**: Documents expiring within 30 days (orange)
+- **Warning Alerts**: Documents expiring within 90 days (yellow)
+- **All Good**: All documents current (green)
+
+### Responding to Alerts
+
+<Steps>
+  <Step title="Review Alert Details">
+    Click on an alert to see the affected personnel and documents.
+  </Step>
+  <Step title="Contact Personnel">
+    Use the "Send Reminder" feature to notify the crew member.
+  </Step>
+  <Step title="Upload Renewed Document">
+    Once the document is renewed, upload the new version with updated expiration date.
+  </Step>
+  <Step title="Dismiss Alert">
+    The alert automatically clears when the document is updated with a future expiration date.
+  </Step>
+</Steps>
+
+## Personnel Status Management
+
+Crew members can have different operational statuses:
+
+- **Active**: Currently operational and available for assignment
+- **On Leave**: Temporarily unavailable (vacation, personal leave)
+- **Suspended**: Temporarily grounded pending investigation or renewal
+- **Inactive**: No longer actively flying or working
+- **Eliminated**: Removed from the system (soft deleted)
+
+### Changing Personnel Status
+
+<Steps>
+  <Step title="Open Personnel Profile">
+    Navigate to the crew member's profile.
+  </Step>
+  <Step title="Change Status">
+    Click the "Change Status" button in the profile header.
+  </Step>
+  <Step title="Select New Status">
+    Choose the new status from the dropdown.
+  </Step>
+  <Step title="Add Reason">
+    Enter the reason for the status change.
+  </Step>
+  <Step title="Set Effective Date">
+    Specify when the status change takes effect.
+  </Step>
+  <Step title="Confirm Change">
+    Save the status change to update the personnel record.
+  </Step>
+</Steps>
+
+<Warning>
+Changing a crew member's status to Suspended or Inactive will prevent them from being assigned to future flights.
+</Warning>
+
+## Role-Based Access Control
+
+The system implements granular permissions based on user roles:
+
+### Available Roles
+
+- **Admin**: Full system access, can manage all personnel and settings
+- **Director**: Read-only access to all data, cannot modify personnel
+- **Medical Editor**: Can manage medical transfers and medical personnel
+- **Operations Editor**: Can manage flight operations and crew assignments
+- **Dispatcher**: Can create transfers and assign resources
+- **Viewer**: Read-only access to assigned areas
+
+### Assigning Roles
+
+When creating or editing personnel:
+
+1. Navigate to the role assignment section
+2. Select one or more applicable roles
+3. The system automatically grants appropriate permissions
+4. Personnel can only access features allowed by their assigned roles
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Document Reviews">
+    Schedule monthly reviews of document expiration dates to ensure no certifications lapse unexpectedly. Don't rely solely on automatic alerts.
+  </Accordion>
+  
+  <Accordion title="Training Ahead of Schedule">
+    Schedule recurrent training to complete at least 30 days before the current certification expires to allow buffer time.
+  </Accordion>
+  
+  <Accordion title="Complete Profiles">
+    Ensure all personnel profiles are 100% complete with all required documentation uploaded and expiration dates set.
+  </Accordion>
+  
+  <Accordion title="Accurate Contact Information">
+    Keep email addresses and phone numbers current so crew members receive alerts about their own document expirations.
+  </Accordion>
+  
+  <Accordion title="Document Retention">
+    Even when uploading renewed documents, keep historical versions for audit trail and compliance purposes.
+  </Accordion>
+</AccordionGroup>
+
+## Reporting and Analytics
+
+### Available Personnel Reports
+
+- **Crew Qualifications Summary**: Overview of all crew qualifications and currencies
+- **Training Compliance**: Percentage of personnel current on required training
+- **Document Expiration Forecast**: Upcoming expirations over the next 6-12 months
+- **Flight Hours by Personnel**: Individual and aggregate flight time statistics
+- **Training Completion Rates**: Training program effectiveness metrics
+
+### Generating Reports
+
+1. Navigate to Reports > Personnel Reports
+2. Select the report type
+3. Set filters (date range, personnel type, status)
+4. Generate report
+5. Export in desired format (PDF, Excel, CSV)
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Flight Operations" icon="plane-departure" href="/features/flight-operations">
+    Assign crew to flights and missions
+  </Card>
+  <Card title="Service Tracking" icon="clipboard-check" href="/features/service-tracking">
+    Track crew involvement in maintenance activities
+  </Card>
+  <Card title="Air Traffic Control" icon="tower-control" href="/features/air-traffic-control">
+    Calculate crew weight for weight & balance
+  </Card>
+  <Card title="Dispatch" icon="tower-broadcast" href="/features/dispatch">
+    Dispatch crew to flight operations
+  </Card>
+</CardGroup>

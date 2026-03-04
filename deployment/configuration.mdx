@@ -1,0 +1,476 @@
+---
+title: Configuration
+description: Configure SIGSAHO backend and frontend settings for development and production
+---
+
+## Overview
+
+SIGSAHO uses environment-based configuration to manage settings across different environments (development, staging, production). The backend uses a centralized configuration file, while the frontend uses Vite's environment variable system.
+
+## Backend Configuration
+
+### Configuration Architecture
+
+The backend uses a centralized configuration approach located at:
+
+```
+back/src/config/config.ts
+```
+
+This file imports environment variables and provides type-safe access throughout the application.
+
+### Configuration File Structure
+
+```typescript
+export const CONFIG = {
+  // Server configuration
+  port: process.env.PORT || 3000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+
+  // Database configuration
+  dbHost: process.env.DB_HOST || 'localhost',
+  dbPort: parseInt(process.env.DB_PORT || '5432', 10),
+  // ... more settings
+};
+```
+
+### Configuration Categories
+
+#### Server Settings
+
+<ParamField path="port" type="number" default="3000">
+  The port number on which the backend server runs.
+  
+  ```bash
+  PORT=3001
+  ```
+</ParamField>
+
+<ParamField path="nodeEnv" type="string" default="development">
+  The application environment. Affects security settings, logging, and behavior.
+  
+  ```bash
+  NODE_ENV=production  # or 'development'
+  ```
+</ParamField>
+
+<Warning>
+  In production, always set `NODE_ENV=production` to enable security features and optimize performance.
+</Warning>
+
+#### Database Settings
+
+<ParamField path="dbHost" type="string" default="localhost">
+  PostgreSQL database host address.
+  
+  ```bash
+  DB_HOST=localhost
+  ```
+</ParamField>
+
+<ParamField path="dbPort" type="number" default="5432">
+  PostgreSQL database port.
+  
+  ```bash
+  DB_PORT=5432
+  ```
+</ParamField>
+
+<ParamField path="apiDbSync" type="boolean" default="false">
+  Whether TypeORM should automatically synchronize the database schema.
+  
+  ```bash
+  API_DB_SYNC=true  # Use only in development!
+  ```
+</ParamField>
+
+<Warning>
+  Never set `API_DB_SYNC=true` in production! Use migrations instead to manage schema changes.
+</Warning>
+
+<ParamField path="seedTestData" type="boolean" default="false">
+  Generate test data on application startup. **Development only**.
+  
+  ```bash
+  SEED_TEST_DATA=true
+  ```
+</ParamField>
+
+#### Security Settings
+
+<ParamField path="apiTokenSecret" type="string" required>
+  Secret key for signing JWT tokens. **Must be set in production**.
+  
+  ```bash
+  TOKEN_SECRET=your-super-secret-token-change-this
+  ```
+</ParamField>
+
+<ParamField path="apiSecretHash" type="string" required>
+  Secret key for encrypting passwords. **Must be set in production**.
+  
+  ```bash
+  SECRET_PASSWORD_ENCRYPT=your-encryption-secret
+  ```
+</ParamField>
+
+<Warning>
+  **Critical**: In production, both `TOKEN_SECRET` and `SECRET_PASSWORD_ENCRYPT` MUST be strong, random values. Never use default or development values.
+</Warning>
+
+<ParamField path="apiCorsOrigin" type="string" default="*">
+  Allowed CORS origins. In production, specify exact domains.
+  
+  ```bash
+  # Development
+  CORS_ORIGIN=*
+  
+  # Production
+  CORS_ORIGIN=https://yourdomain.com
+  ```
+</ParamField>
+
+<Warning>
+  Never use `CORS_ORIGIN=*` in production! Always specify exact allowed origins.
+</Warning>
+
+#### JWT Configuration
+
+<ParamField path="jwtAccessTokenExpiry" type="string" default="15m">
+  Access token expiration time.
+  
+  ```bash
+  JWT_ACCESS_TOKEN_EXPIRY=15m
+  ```
+  
+  Supported formats: `15m`, `1h`, `7d`
+</ParamField>
+
+<ParamField path="jwtRefreshTokenExpiry" type="number" default="7">
+  Refresh token expiration in days.
+  
+  ```bash
+  JWT_REFRESH_TOKEN_EXPIRY_DAYS=7
+  ```
+</ParamField>
+
+#### File Upload Settings
+
+<ParamField path="uploadMaxSize" type="number" default="10485760">
+  Maximum file upload size in bytes (default: 10MB).
+  
+  ```bash
+  UPLOAD_MAX_SIZE=10485760  # 10MB
+  ```
+</ParamField>
+
+<ParamField path="uploadsDir" type="string" default="uploads">
+  Local directory for file uploads in development mode.
+  
+  ```bash
+  UPLOADS_DIR=uploads
+  ```
+</ParamField>
+
+<ParamField path="nodeEnv" type="string" default="development">
+  File storage mode: `development` for local storage, `production` for AWS S3.
+  
+  ```bash
+  NODE_ENV=development  # Local storage
+  NODE_ENV=production   # S3 storage
+  ```
+</ParamField>
+
+#### AWS S3 Configuration (Production)
+
+<ParamField path="awsAccessKeyId" type="string">
+  AWS access key ID for S3 access.
+  
+  ```bash
+  AWS_ACCESS_KEY_ID=your_access_key
+  ```
+</ParamField>
+
+<ParamField path="awsSecretAccessKey" type="string">
+  AWS secret access key for S3 access.
+  
+  ```bash
+  AWS_SECRET_ACCESS_KEY=your_secret_key
+  ```
+</ParamField>
+
+<ParamField path="awsRegion" type="string" default="us-east-1">
+  AWS region where your S3 bucket is located.
+  
+  ```bash
+  AWS_REGION=us-east-1
+  ```
+</ParamField>
+
+<ParamField path="s3BucketName" type="string">
+  S3 bucket name for file storage.
+  
+  ```bash
+  S3_BUCKET_NAME=your-bucket-name
+  ```
+</ParamField>
+
+<Info>
+  AWS S3 configuration is only required when `NODE_ENV=production`. In development, files are stored locally.
+</Info>
+
+#### External API Configuration
+
+<ParamField path="awcApiUrl" type="string" default="https://aviationweather.gov/api/data">
+  Aviation Weather Center API endpoint.
+  
+  ```bash
+  AWC_API_URL=https://aviationweather.gov/api/data
+  ```
+</ParamField>
+
+<ParamField path="nmsApiUrl" type="string">
+  NMS API base URL.
+  
+  ```bash
+  NMS_API_URL=https://api.nms.example.com
+  ```
+</ParamField>
+
+<ParamField path="nmsApiKey" type="string">
+  NMS API authentication key.
+  
+  ```bash
+  NMS_API_KEY=your-api-key
+  ```
+</ParamField>
+
+<ParamField path="nmsApiSecret" type="string">
+  NMS API secret.
+  
+  ```bash
+  NMS_API_SECRET=your-api-secret
+  ```
+</ParamField>
+
+## Frontend Configuration
+
+### Vite Environment Variables
+
+The frontend uses Vite's environment variable system. All variables must be prefixed with `VITE_` to be exposed to the client.
+
+### Configuration File
+
+Create a `.env` file in the frontend directory:
+
+```bash
+cd frontend
+cp .env.example .env  # If .env.example exists
+```
+
+### Frontend Environment Variables
+
+<ParamField path="VITE_API_URL" type="string" required>
+  Backend API base URL.
+  
+  ```bash
+  # Development
+  VITE_API_URL=http://localhost:3001/api/v1
+  
+  # Production
+  VITE_API_URL=https://api.yourdomain.com/api/v1
+  ```
+</ParamField>
+
+<Warning>
+  Ensure the `VITE_API_URL` matches your backend server URL and includes the correct API version path.
+</Warning>
+
+### Accessing Environment Variables
+
+In your React/TypeScript code:
+
+```typescript
+const apiUrl = import.meta.env.VITE_API_URL;
+```
+
+## Environment-Specific Configuration
+
+### Development Environment
+
+<Steps>
+  <Step title="Create .env file">
+    ```bash
+    cd back
+    cp .env.example .env
+    ```
+  </Step>
+
+  <Step title="Configure for development">
+    ```bash
+    NODE_ENV=development
+    API_DB_SYNC=true
+    SEED_TEST_DATA=true
+    CORS_ORIGIN=*
+    TOKEN_SECRET=dev-secret-token
+    ```
+  </Step>
+
+  <Step title="Start development server">
+    ```bash
+    pnpm dev
+    ```
+  </Step>
+</Steps>
+
+### Production Environment
+
+<Steps>
+  <Step title="Set production environment variables">
+    **Never use `.env` files in production.** Set environment variables through your hosting platform:
+    
+    - AWS: EC2 User Data, ECS Task Definitions, or Parameter Store
+    - Docker: `docker run -e` or docker-compose environment
+    - Kubernetes: ConfigMaps and Secrets
+    - Platform services: Heroku, Railway, Render config
+  </Step>
+
+  <Step title="Required production variables">
+    ```bash
+    NODE_ENV=production
+    API_DB_SYNC=false
+    TOKEN_SECRET=<strong-random-secret>
+    SECRET_PASSWORD_ENCRYPT=<strong-random-secret>
+    CORS_ORIGIN=https://yourdomain.com
+    ```
+  </Step>
+
+  <Step title="Build and start">
+    ```bash
+    pnpm build
+    pnpm start
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  **Production Security Checklist:**
+  - ✅ `NODE_ENV=production`
+  - ✅ Strong, random `TOKEN_SECRET` and `SECRET_PASSWORD_ENCRYPT`
+  - ✅ `API_DB_SYNC=false`
+  - ✅ Specific `CORS_ORIGIN` (not `*`)
+  - ✅ AWS credentials set (if using S3)
+  - ✅ Database credentials secured
+  - ✅ No `.env` file committed to repository
+</Warning>
+
+## Configuration Best Practices
+
+### Security
+
+1. **Never commit `.env` files** to version control
+2. Use strong, randomly generated secrets for production
+3. Rotate secrets regularly
+4. Use environment-specific credentials
+5. Limit CORS origins to known domains
+
+### Development
+
+1. Use `.env.example` as a template
+2. Document all required variables
+3. Use development-friendly defaults
+4. Enable debugging features (`SEED_TEST_DATA`, etc.)
+
+### Production
+
+1. Use environment variables from hosting platform
+2. Never use development defaults
+3. Disable database auto-sync
+4. Enable all security features
+5. Monitor and log configuration issues
+
+## Database Migrations
+
+Instead of using `API_DB_SYNC=true`, use TypeORM migrations in production:
+
+```bash
+# Generate a migration
+pnpm migration:generate src/migrations/YourMigrationName
+
+# Run migrations
+pnpm migration:run
+
+# Revert last migration
+pnpm migration:revert
+```
+
+<Info>
+  See the backend's `package.json` for all available migration commands.
+</Info>
+
+## Proxy and Trust Configuration
+
+When running behind a reverse proxy (Nginx, AWS ELB, CloudFlare):
+
+```bash
+# Trust first proxy (Nginx/AWS ELB)
+TRUST_PROXY_LEVEL=1
+
+# Trust two proxies (CloudFlare -> Nginx)
+TRUST_PROXY_LEVEL=2
+```
+
+This ensures proper IP address detection for rate limiting and logging.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Environment variables not loading">
+    Ensure `.env` file is in the correct directory and `dotenv` is configured:
+    
+    ```typescript
+    // At the top of your entry file
+    import dotenv from 'dotenv';
+    dotenv.config();
+    ```
+  </Accordion>
+
+  <Accordion title="CORS errors in browser">
+    Check that `CORS_ORIGIN` matches your frontend URL exactly:
+    
+    ```bash
+    # Backend .env
+    CORS_ORIGIN=http://localhost:5173
+    ```
+  </Accordion>
+
+  <Accordion title="Database connection failed">
+    Verify database credentials and ensure PostgreSQL is running:
+    
+    ```bash
+    # Test connection
+    psql -h localhost -U postgres -d estadistica-hangar
+    ```
+  </Accordion>
+
+  <Accordion title="AWS S3 upload failed">
+    Verify AWS credentials and bucket permissions:
+    
+    ```bash
+    # Test AWS CLI access
+    aws s3 ls s3://your-bucket-name
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="code" href="/deployment/environment-variables">
+    Complete reference of all environment variables
+  </Card>
+  
+  <Card title="Installation" icon="download" href="/deployment/installation">
+    Installation guide and setup instructions
+  </Card>
+</CardGroup>

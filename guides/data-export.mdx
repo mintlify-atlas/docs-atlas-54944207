@@ -1,0 +1,554 @@
+---
+title: "Data Export Guide"
+description: "Export SIGSAHO data to Excel, PDF, and CSV formats"
+---
+
+SIGSAHO supports exporting data in multiple formats for analysis, reporting, and archival purposes. This guide details the export capabilities, format specifications, and best practices.
+
+## Supported Export Formats
+
+SIGSAHO supports three primary export formats:
+
+| Format | Use Case | File Extension | Libraries Used |
+|--------|----------|----------------|----------------|
+| **Excel** | Data analysis, spreadsheets | `.xlsx` | ExcelJS 4.4.0 |
+| **PDF** | Official reports, printing | `.pdf` | jsPDF + autoTable |
+| **CSV** | Data import, compatibility | `.csv` | Native browser APIs |
+
+<Note>
+Available export formats vary by page and data type. Not all pages support all three formats.
+</Note>
+
+## Excel Export (XLSX)
+
+### Overview
+
+Excel export generates professional `.xlsx` workbooks with:
+
+- Multiple sheets (when applicable)
+- Institutional branding and headers
+- Formatted tables with alternating row colors
+- Optimized column widths
+- Frozen header rows for easy scrolling
+- Optional sheet protection
+- Metadata (creator, title, timestamps)
+
+### Export Process
+
+<Steps>
+  <Step title="Navigate to a data page">
+    Examples: Statistics, User Management, Aircraft Fleet, Flight History
+  </Step>
+
+  <Step title="Apply filters (optional)">
+    Use available filters to refine your dataset:
+    - Date ranges
+    - Categories
+    - Search terms
+    - Status filters
+  </Step>
+
+  <Step title="Click the Excel export button">
+    Look for buttons labeled:
+    - "Export to Excel"
+    - "Download Excel"
+    - "XLSX Export"
+    - Download icon with Excel branding
+  </Step>
+
+  <Step title="Wait for generation">
+    First-time exports may take a few seconds as the ExcelJS library loads dynamically. Subsequent exports are faster.
+  </Step>
+
+  <Step title="Save the file">
+    Your browser automatically downloads the file with a timestamped filename.
+    
+    Example: `estadisticas-busqueda_2026-03-04.xlsx`
+  </Step>
+</Steps>
+
+### Excel File Structure
+
+Every Excel export follows this standardized structure:
+
+#### Row 1: Institutional Header
+- **Content**: "S.G.A.H.O — Sistema de Gestión Aeronáutica del Helicóptero Oficial"
+- **Styling**: Bold, white text on maroon background (#9D2449)
+- **Merged**: Spans all columns
+- **Height**: 26 pixels
+
+#### Row 2: Report Subtitle
+- **Content**: Report title or description
+- **Styling**: Bold, maroon text on light pink background
+- **Merged**: Spans all columns
+- **Height**: 20 pixels
+
+#### Row 3: Period/Date Range
+- **Content**: "Período: YYYY-MM-DD al YYYY-MM-DD" (if applicable)
+- **Styling**: Italic, gray text (slate-500)
+- **Merged**: Spans all columns
+- **Height**: 16 pixels
+
+#### Row 4: Column Headers
+- **Content**: Column names
+- **Styling**: Bold, white text on dark background (slate-900)
+- **Bottom Border**: Medium maroon line
+- **Frozen**: Row remains visible when scrolling
+- **Height**: 22 pixels
+
+#### Rows 5+: Data Rows
+- **Content**: Your exported data
+- **Styling**: 
+  - Odd rows: White background
+  - Even rows: Light gray background (slate-50) for readability
+  - Borders: Thin slate-200 borders between cells
+- **Height**: 18 pixels per row
+
+#### Last Row: Record Count
+- **Content**: "Total de registros: {count}"
+- **Styling**: Italic, gray text
+- **Merged**: Spans all columns
+
+### Column Configuration
+
+Columns can be customized in the export configuration:
+
+```typescript
+columns: [
+  { key: 'date', header: 'Fecha', width: 15 },
+  { key: 'description', header: 'Descripción', width: 40, wrapText: true },
+  { key: 'amount', header: 'Cantidad', width: 12 }
+]
+```
+
+**Properties:**
+- `key`: Data field to map to this column
+- `header`: Display name in the header row
+- `width`: Column width in approximate characters (default: 22)
+- `wrapText`: Allow multi-line text in cells (default: false)
+
+<Tip>
+Use `wrapText: true` only for columns with long text content (notes, observations). This increases row height for those specific rows.
+</Tip>
+
+### Security Features
+
+#### Formula Injection Prevention
+
+SIGSAHO automatically sanitizes cell values to prevent formula injection (CWE-1236):
+
+**Dangerous Characters:**
+- `=` (equals)
+- `+` (plus)
+- `-` (minus)
+- `@` (at symbol)
+- `\t` (tab)
+- `\r` (carriage return)
+
+If a value starts with any of these characters, a space (`U+0020`) is prepended:
+
+Example:
+- Input: `=SUM(A1:A10)`
+- Output: ` =SUM(A1:A10)` (with leading space)
+
+This neutralizes the formula while preserving readability.
+
+<Warning>
+Even though ExcelJS writes strings with explicit type markers, LibreOffice Calc and older Excel versions can ignore these markers. Sanitization provides defense-in-depth protection.
+</Warning>
+
+#### Filename Sanitization
+
+Filenames are sanitized to prevent path traversal attacks:
+
+- Only letters, numbers, hyphens, and underscores are allowed
+- All other characters are replaced with underscores
+- Timestamp is appended automatically
+
+Example:
+- Input: `reporte/../malicious`
+- Output: `reporte____malicious_2026-03-04.xlsx`
+
+#### Sheet Protection (Optional)
+
+Some exports enable sheet protection:
+
+**When Protected:**
+- Users can view, select, copy, sort, and filter data
+- Users cannot modify, delete, or insert rows/columns
+- Protection uses empty password (no access barrier)
+- Purpose: Prevent accidental edits, maintain data integrity
+
+**Protection Settings:**
+- `selectLockedCells`: ✓ Enabled
+- `selectUnlockedCells`: ✓ Enabled
+- `sort`: ✓ Enabled (analysis allowed)
+- `autoFilter`: ✓ Enabled (filtering allowed)
+- `formatCells`: ✗ Disabled
+- `insertRows`: ✗ Disabled
+- `deleteRows`: ✗ Disabled
+- `spinCount`: 100,000 PBKDF2 iterations (CIS recommendation)
+
+<Note>
+Sheet protection is informational, not cryptographic. Users can unprotect sheets if needed for legitimate analysis. Its purpose is preventing accidental modifications to official reports.
+</Note>
+
+### Multi-Sheet Workbooks
+
+Some exports create multiple sheets in a single workbook:
+
+**Example: Comprehensive Statistics Export**
+- Sheet 1: "Summary" - KPI overview
+- Sheet 2: "By Region" - Geographic breakdown
+- Sheet 3: "By Category" - Service type distribution
+- Sheet 4: "Top Performers" - Rankings
+
+Each sheet follows the same header structure but contains different data.
+
+### Performance Characteristics
+
+- **Library Size**: ~1.2 MB (ExcelJS) - loaded dynamically on first use
+- **Generation Speed**: 
+  - &lt;1,000 rows: &lt;1 second
+  - 1,000-10,000 rows: 1-5 seconds
+  - &gt;10,000 rows: 5-30 seconds
+- **Memory Usage**: Approximately 2-3 MB per 10,000 rows
+
+## PDF Export
+
+### Overview
+
+PDF export generates print-ready documents with:
+
+- Professional institutional headers
+- Color-coded tables and charts
+- Automatic page numbering
+- Multi-page support with consistent footers
+- Embedded summary statistics
+- Generation timestamp
+
+### Export Process
+
+<Steps>
+  <Step title="Navigate to a report page">
+    Examples: Statistics, Transfer details, User profiles, Aircraft records
+  </Step>
+
+  <Step title="Configure report parameters">
+    Apply any available filters or customizations.
+  </Step>
+
+  <Step title="Click PDF export button">
+    Look for:
+    - "Export to PDF"
+    - "Download PDF"
+    - "Generate Report"
+    - Download icon with PDF branding
+  </Step>
+
+  <Step title="PDF generates and downloads">
+    The PDF is generated client-side (for data tables) or server-side (for official cards).
+  </Step>
+</Steps>
+
+### PDF Document Structure
+
+#### Header Section (Every Page)
+
+1. **Top Decorative Line**: 2pt maroon line across the page
+2. **Title**: Bold, 16pt, dark gray
+3. **Subtitle**: Normal, 10pt, medium gray (if provided)
+4. **Generation Timestamp**: Right-aligned, 8pt, format: "Generado: [date and time]"
+5. **Separator Line**: 0.5pt gray line
+
+#### Summary Section (Optional)
+
+If summary KPIs are provided:
+- Up to 4 KPIs per row
+- Label in small gray text
+- Value in large bold text below label
+- Grid layout for multiple KPIs
+
+#### Table Section
+
+- **Headers**: White text on maroon background, bold, 9pt
+- **Data Rows**: 
+  - Odd rows: White background
+  - Even rows: Light gray background
+  - All rows: Thin gray borders
+- **Cell Padding**: 3mm for readability
+- **Font**: 9pt body text
+
+#### Footer Section (Every Page)
+
+- **Left**: "S.G.A.H.O - Sistema de Gestión Aeronáutica"
+- **Center**: "Página X de Y"
+- **Font**: 7pt gray text
+- **Position**: 10mm from bottom
+
+### PDF Page Specifications
+
+- **Paper Size**: Letter (8.5" × 11" / 215.9mm × 279.4mm)
+- **Orientation**: 
+  - Portrait (default) - most reports
+  - Landscape - wide tables with many columns
+- **Margins**: 14mm left/right, 20mm top, 20mm bottom
+- **Font Family**: Helvetica (universally supported)
+- **Color Scheme**: SIGSAHO brand colors
+
+### Color Palette
+
+| Element | Color | Hex Code | RGB |
+|---------|-------|----------|-----|
+| Primary (headers) | Maroon | #9D2449 | 157, 36, 73 |
+| Dark text | Dark gray | #232323 | 35, 35, 35 |
+| Medium text | Medium gray | #646464 | 100, 100, 100 |
+| Light background | Light gray | #F0F0F0 | 240, 240, 240 |
+| White | White | #FFFFFF | 255, 255, 255 |
+
+### Multi-Section PDFs
+
+Some reports combine multiple sections in one document:
+
+<Steps>
+  <Step title="Section header">
+    Each section starts with a bold, maroon title.
+  </Step>
+
+  <Step title="Section summary">
+    Optional KPI line showing section-specific metrics.
+  </Step>
+
+  <Step title="Section table">
+    Data table formatted with standard styling.
+  </Step>
+
+  <Step title="Section spacing">
+    12mm spacing between sections. New page if insufficient space.
+  </Step>
+</Steps>
+
+### PDF Security
+
+**Data Sanitization:**
+- Control characters (0x00-0x1F except standard whitespace) are removed
+- Maximum value length: 500 characters per cell
+- Null/undefined values converted to empty strings
+- Objects JSON-stringified and truncated
+
+**Content Safety:**
+- No external resource loading
+- No JavaScript execution
+- Static, self-contained documents
+
+## CSV Export
+
+### Overview
+
+CSV (Comma-Separated Values) export provides:
+
+- Universal compatibility (Excel, Google Sheets, databases)
+- Lightweight file size
+- UTF-8 encoding with BOM for Excel compatibility
+- Proper escaping of special characters
+
+### Export Process
+
+<Steps>
+  <Step title="Select data to export">
+    Navigate to a page with CSV export support (typically user lists, data tables).
+  </Step>
+
+  <Step title="Click CSV export button">
+    Usually labeled "Export CSV" or "Download CSV".
+  </Step>
+
+  <Step title="File downloads immediately">
+    CSV generation is fast due to simple text format.
+  </Step>
+</Steps>
+
+### CSV Format Specifications
+
+#### UTF-8 BOM
+
+CSV files include a UTF-8 Byte Order Mark (`\uFEFF`) at the beginning:
+
+- Ensures Excel correctly interprets accented characters
+- Required for Spanish-language content (á, é, í, ó, ú, ñ)
+- Can be disabled with `includeBOM: false` option
+
+<Tip>
+If opening CSV in Excel shows garbled characters, the BOM may be missing. Re-export or manually specify UTF-8 encoding when opening.
+</Tip>
+
+#### Value Escaping
+
+CSV values are automatically escaped:
+
+**Escaping Rules:**
+1. Values containing commas, quotes, or newlines are wrapped in double quotes
+2. Internal double quotes are duplicated
+3. Line breaks within values are preserved
+
+**Examples:**
+
+| Original Value | Escaped Value |
+|---------------|---------------|
+| `Simple text` | `Simple text` |
+| `Hello, World` | `"Hello, World"` |
+| `Say "Hi"` | `"Say ""Hi"""` |
+| `Line 1\nLine 2` | `"Line 1\nLine 2"` |
+
+#### Header Row
+
+First row contains column headers:
+
+- Custom headers from configuration, or
+- Default field names if no custom headers provided
+- Headers follow same escaping rules as data
+
+#### Data Rows
+
+Subsequent rows contain data:
+
+- One row per record
+- Columns match header order
+- Missing values represented as empty (between commas)
+
+### CSV Value Formatting
+
+Special data types are formatted for readability:
+
+```typescript
+formatCSVValue(value):
+  - Booleans: "Sí" / "No"
+  - Dates: "DD/MM/YYYY" (es-MX locale)
+  - Arrays: "Item1; Item2; Item3"
+  - Objects: JSON string
+  - Null/undefined: Empty string
+```
+
+### CSV Export Configuration
+
+Exports can be customized:
+
+```typescript
+exportToCSV(data, {
+  filename: 'usuarios-activos',
+  headers: {
+    username: 'Usuario',
+    fullName: 'Nombre Completo',
+    email: 'Correo Electrónico',
+    role: 'Rol'
+  },
+  columns: ['username', 'fullName', 'email', 'role'],
+  includeBOM: true  // default
+});
+```
+
+**Options:**
+- `filename`: Base name (timestamp added automatically)
+- `headers`: Custom column display names
+- `columns`: Which columns to include (order matters)
+- `includeBOM`: UTF-8 BOM for Excel (default: true)
+
+## Export Best Practices
+
+### Choosing the Right Format
+
+**Use Excel When:**
+- You need formatted, professional reports
+- Data will be analyzed in spreadsheet software
+- Multiple related datasets should be in one file (multi-sheet)
+- Visual presentation matters
+- You need to preserve formulas or complex formatting (future feature)
+
+**Use PDF When:**
+- Creating official, archival records
+- Printing physical copies
+- Distributing read-only reports
+- Ensuring consistent appearance across platforms
+- Including charts and visualizations
+
+**Use CSV When:**
+- Importing data into other systems
+- Maximum compatibility is required
+- File size must be minimized
+- Working with data analysis tools (R, Python, SQL)
+- Sharing raw data without formatting
+
+### Performance Optimization
+
+1. **Filter Before Exporting**: Narrow your dataset to only necessary records
+2. **Limit Date Ranges**: Shorter periods = faster exports
+3. **Choose CSV for Large Datasets**: Significantly faster than Excel/PDF
+4. **Close Unused Browser Tabs**: Free memory for export processing
+
+### File Management
+
+1. **Organize by Type**: Create folders for each export format
+2. **Archive Regularly**: Move old exports to archive folders
+3. **Use Descriptive Names**: Take advantage of automatic timestamps
+4. **Back Up Critical Exports**: Store important reports in multiple locations
+
+## Troubleshooting
+
+### Excel File Issues
+
+**File Won't Open:**
+- Verify `.xlsx` extension (not `.xls`)
+- Try Google Sheets or LibreOffice Calc as alternative
+- Re-download (file may be corrupted)
+
+**Formulas Appear as Text:**
+- This is intentional for security (formula injection prevention)
+- If you need formulas, manually recreate them after verifying data
+
+**Special Characters Display Incorrectly:**
+- Excel version may not support UTF-8 properly
+- Try opening in Google Sheets first, then save as Excel
+- Update to latest Excel version
+
+### PDF File Issues
+
+**Text Appears Garbled:**
+- Update PDF reader software
+- Try different PDF viewer (Adobe, Chrome, Firefox)
+- Re-download file
+
+**Charts Missing or Incorrect:**
+- May be browser rendering issue during generation
+- Try different browser for export
+- Report bug to administrator with screenshots
+
+**Pages Cut Off:**
+- Data table may be too wide for portrait orientation
+- Request landscape orientation (if available)
+- Export to Excel instead for better handling of wide data
+
+### CSV File Issues
+
+**Accented Characters Incorrect in Excel:**
+- Excel may not have detected UTF-8 encoding
+- Manually specify UTF-8 when opening:
+  1. Data → Get Data → From Text/CSV
+  2. Select file
+  3. Choose encoding: UTF-8
+  4. Click Load
+
+**Extra Line Breaks:**
+- Values containing newlines are properly quoted
+- This is correct CSV format
+- Import wizard should handle automatically
+
+**Commas in Data Break Columns:**
+- Ensure your CSV reader supports quoted fields
+- This is standard CSV escaping
+- Try import wizard instead of direct open
+
+## Related Resources
+
+- [Reports Guide](/guides/reports) - Comprehensive reporting workflows
+- [Dashboard](/guides/dashboard) - Real-time operational monitoring
+- [Backend Architecture](/architecture/backend) - API implementation details

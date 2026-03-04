@@ -1,0 +1,330 @@
+---
+title: Flight Operations
+description: Record flights, calculate weight and balance, and manage operational transfers
+---
+
+Flight Operations is the operational heart of SIGSAHO, enabling you to record and manage all types of flight missions, from medical transfers to security operations.
+
+## Overview
+
+The Flight Operations module handles the complete lifecycle of flight missions:
+
+<CardGroup cols={2}>
+  <Card title="Mission Recording" icon="plane-departure">
+    Record general and medical transfer missions with complete flight details
+  </Card>
+  <Card title="Weight & Balance" icon="balance-scale">
+    Calculate and verify weight and balance before every flight
+  </Card>
+  <Card title="Crew Assignment" icon="users">
+    Assign crew members and track crew participation in missions
+  </Card>
+  <Card title="Flight Tracking" icon="route">
+    Monitor flight routes, times, and fuel consumption
+  </Card>
+</CardGroup>
+
+## Transfer Types
+
+SIGSAHO supports two main categories of flight operations:
+
+### General Transfers
+
+General transfers include non-medical operations such as:
+
+- **Security Operations**: Law enforcement and public safety missions
+- **Civil Protection**: Emergency response and disaster relief
+- **Maintenance Flights**: Ferry flights and positioning
+- **Administrative**: Personnel transport and logistics
+
+### Medical Transfers
+
+Medical transfers follow a two-phase workflow:
+
+**Phase 1 - Medical Request**: Clinical staff creates the transfer request
+**Phase 2 - Operational Dispatch**: Aviation staff assigns resources and completes the mission
+
+## Recording a General Transfer
+
+<Steps>
+  <Step title="Access Transfer Registration">
+    Navigate to the Services module and select "Register Transfer" from the menu.
+  </Step>
+  <Step title="Select Transfer Type">
+    Choose "General Transfer" and select the specific category (Security, Civil Protection, etc.).
+  </Step>
+  <Step title="Enter Mission Details">
+    Fill in the core flight information:
+    - Transfer date and time
+    - Origin and destination (using geographic cascade selectors)
+    - Requesting entity or person
+    - Mission description
+  </Step>
+  <Step title="Assign Aircraft and Crew">
+    Select the aircraft and crew members:
+    - Choose the assigned aircraft from your fleet
+    - Select the pilot in command
+    - Add additional crew members as needed
+  </Step>
+  <Step title="Record Flight Data">
+    Enter operational details:
+    - Flight time (in minutes)
+    - Fuel consumed
+    - Flight route
+    - Travel time for the route
+    - Additional passengers (if any)
+  </Step>
+  <Step title="Add Logbook Information">
+    Record the logbook folio number for official records.
+  </Step>
+  <Step title="Submit Transfer">
+    Review all information and submit the transfer record.
+  </Step>
+</Steps>
+
+## Medical Transfer Workflow
+
+Medical transfers use a bifurcated workflow to separate clinical and operational responsibilities.
+
+### Phase 1: Medical Request
+
+Clinical staff initiates the medical transfer:
+
+<Steps>
+  <Step title="Create Medical Request">
+    Navigate to Medical Transfers and click "New Request".
+  </Step>
+  <Step title="Enter Medical Details">
+    Fill in the medical information:
+    - Hospital of origin
+    - Destination hospital
+    - Medical transfer type (Emergency, Scheduled, etc.)
+    - Diagnosis type and details
+  </Step>
+  <Step title="Add Patient Information">
+    Register patient details (encrypted for privacy):
+    - Patient name and identification
+    - Age and vital information
+    - Medical condition
+    - Special requirements
+  </Step>
+  <Step title="Set Origin and Destination">
+    Use the geographic selectors to specify:
+    - Origin location (state, region, municipality, locality)
+    - Destination location
+  </Step>
+  <Step title="Submit Request">
+    Save the medical request. Status is set to "In Process" pending operational completion.
+  </Step>
+</Steps>
+
+<Note>
+Patient data is encrypted at rest using AES-256 encryption to ensure HIPAA-level privacy compliance.
+</Note>
+
+### Phase 2: Operational Completion
+
+Aviation staff completes the mission with operational details:
+
+<Steps>
+  <Step title="Select Pending Mission">
+    From the Medical Transfers list, select a mission with "In Process" status.
+  </Step>
+  <Step title="Open Completion Form">
+    Click "Complete Mission" to open the operational dispatch form.
+  </Step>
+  <Step title="Assign Resources">
+    Assign operational resources:
+    - Aircraft selection
+    - Crew members (pilot, co-pilot, medical staff)
+    - Medical equipment used
+  </Step>
+  <Step title="Record Flight Details">
+    Enter flight operational data:
+    - Actual flight time
+    - Fuel consumption
+    - Departure and arrival times
+    - Route flown
+  </Step>
+  <Step title="Finalize Mission">
+    Submit the completion form. The system:
+    - Updates aircraft flight hours and cycles
+    - Changes transfer status to "Completed"
+    - Generates mission summary report
+  </Step>
+</Steps>
+
+## Weight and Balance Calculations
+
+Before every flight, pilots must calculate and verify weight and balance to ensure safe operations.
+
+### Creating a Weight and Balance Sheet
+
+<Steps>
+  <Step title="Access Weight & Balance">
+    From the Air Traffic Control module, select "Weight & Balance".
+  </Step>
+  <Step title="Select Aircraft">
+    Choose the aircraft for which you're calculating weight and balance.
+  </Step>
+  <Step title="Enter Basic Empty Weight">
+    The system automatically populates:
+    - Operating empty weight
+    - Empty CG (center of gravity)
+    - Empty moment
+  </Step>
+  <Step title="Add Fuel Load">
+    Enter fuel quantities:
+    - Fuel weight
+    - Fuel arm (distance from datum)
+    - System calculates moment automatically
+  </Step>
+  <Step title="Add Crew and Passengers">
+    For each crew member and passenger:
+    - Enter weight
+    - Specify seating position (arm)
+    - System calculates individual moments
+  </Step>
+  <Step title="Add Cargo">
+    If carrying cargo:
+    - Enter cargo weight
+    - Specify cargo position
+    - Add cargo moment
+  </Step>
+  <Step title="Review Calculations">
+    The system automatically calculates:
+    - **Takeoff Weight**: Total weight at departure
+    - **Takeoff CG**: Center of gravity at takeoff
+    - **Takeoff MAC**: Mean Aerodynamic Chord percentage
+    - **Landing Weight**: Estimated weight after fuel burn
+    - **Landing CG**: Center of gravity at landing
+    - **Landing MAC**: MAC percentage at landing
+  </Step>
+  <Step title="Verify Limits">
+    Ensure all values are within the aircraft's operational limits:
+    - Maximum takeoff weight
+    - CG envelope
+    - Maximum landing weight
+  </Step>
+  <Step title="Save and Print">
+    Save the weight and balance sheet and print for flight documentation.
+  </Step>
+</Steps>
+
+<Warning>
+Never depart if the calculated weight and balance falls outside the approved aircraft envelope. Recalculate with adjusted loading.
+</Warning>
+
+## Crew Management in Flight Operations
+
+### Assigning Crew Members
+
+The system supports multiple crew roles:
+
+- **Pilot in Command**: Primary flight authority
+- **First Officer**: Co-pilot or second-in-command
+- **Flight Engineer**: For aircraft requiring flight engineers
+- **Medical Personnel**: Doctors, nurses, paramedics (for medical transfers)
+- **Additional Crew**: Other operational personnel
+
+### Crew Assignment Process
+
+When recording a transfer:
+
+1. **Select Crew Members**: Use the multi-select dropdown to choose crew
+2. **Assign Roles**: Designate the specific role for each crew member
+3. **Verify Qualifications**: System highlights if crew lacks required certifications
+4. **Track Participation**: Each flight is logged to the crew member's flight history
+
+## Transfer Status Tracking
+
+Transfers move through several status states:
+
+- **In Process**: Transfer created but not yet completed
+- **Completed**: Flight successfully completed and logged
+- **Cancelled**: Transfer cancelled before execution
+- **Pending**: Awaiting additional information or approval
+
+### Changing Transfer Status
+
+<Steps>
+  <Step title="Locate Transfer">
+    Find the transfer in the transfers list.
+  </Step>
+  <Step title="Open Actions Menu">
+    Click the actions menu (three dots) on the transfer row.
+  </Step>
+  <Step title="Select Status Change">
+    Choose "Change Status" from the menu.
+  </Step>
+  <Step title="Choose New Status">
+    Select the new status from the dropdown.
+  </Step>
+  <Step title="Add Notes">
+    Enter any relevant notes or reasons for the status change.
+  </Step>
+  <Step title="Confirm">
+    Save the status change to update the transfer record.
+  </Step>
+</Steps>
+
+## Flight Statistics and Reporting
+
+The system automatically generates statistics from flight operations:
+
+### Available Reports
+
+- **Flight Hours by Aircraft**: Total hours per aircraft over a date range
+- **Transfer Type Analysis**: Breakdown of missions by category
+- **Crew Utilization**: Flight hours per crew member
+- **Medical Transfer Statistics**: Medical mission metrics and outcomes
+- **Fuel Consumption**: Fuel usage trends and analysis
+
+### Generating Reports
+
+1. Navigate to Statistics module
+2. Select the report type
+3. Set date range filters
+4. Choose additional filters (aircraft, crew, transfer type)
+5. Generate and export report (PDF, Excel, CSV)
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Accurate Time Recording">
+    Always record actual flight times accurately. This is critical for maintenance scheduling, crew duty time tracking, and operational statistics.
+  </Accordion>
+  
+  <Accordion title="Weight & Balance Before Every Flight">
+    Complete a weight and balance calculation for every flight, even if the loading seems similar to previous flights. Conditions change.
+  </Accordion>
+  
+  <Accordion title="Crew Qualifications">
+    Verify that all assigned crew members have current certifications and medical clearances before dispatch.
+  </Accordion>
+  
+  <Accordion title="Timely Documentation">
+    Record transfers as soon as possible after completion while details are fresh. This ensures accuracy and compliance.
+  </Accordion>
+  
+  <Accordion title="Medical Privacy">
+    Handle all medical transfer data with strict confidentiality. Only authorized personnel should access patient information.
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Aircraft Management" icon="plane" href="/features/aircraft-management">
+    Manage your aircraft fleet
+  </Card>
+  <Card title="Crew Management" icon="users" href="/features/crew-management">
+    Manage crew members and certifications
+  </Card>
+  <Card title="Air Traffic Control" icon="tower-control" href="/features/air-traffic-control">
+    Weather and weight & balance tools
+  </Card>
+  <Card title="Dispatch" icon="clipboard-check" href="/features/dispatch">
+    Flight dispatch and planning
+  </Card>
+</CardGroup>

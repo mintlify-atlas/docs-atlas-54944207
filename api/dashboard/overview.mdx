@@ -1,0 +1,191 @@
+---
+title: 'Dashboard Alerts'
+api: 'GET /dashboard/alerts'
+---
+
+Retrieves prioritized system alerts for the aeronautical system grouped by criticality level.
+
+Alerts cover four categories of operational risk:
+- **Expired documents** (`critical`): Staff documents with expiration date before current date (up to 10 records)
+- **Expiring documents** (`warning`): Documents about to expire within configured window (default: 30 days, up to 10 records)
+- **Upcoming trainings** (`info`): Active trainings scheduled within configured window (default: 7 days, up to 10 records)
+- **Aircraft parts at limit** (`critical`/`warning`): Parts in OVERDUE, NEAR_LIMIT or APPROACHING_LIMIT status (up to 10 records)
+
+Alerts are sorted by priority: `critical` > `warning` > `info`. Response is limited to maximum 20 alerts total.
+
+## Authorization
+
+Requires authentication via JWT cookie and statistics permissions (`requireStats`).
+
+## Query Parameters
+
+<ParamField query="doc_warning_days" type="integer" default="30">
+  Days in advance to alert about expiring documents. Minimum value: 1.
+  
+  If not provided, defaults to 30 days.
+</ParamField>
+
+<ParamField query="training_warning_days" type="integer" default="7">
+  Days in advance to alert about upcoming trainings. Minimum value: 1.
+  
+  If not provided, defaults to 7 days.
+</ParamField>
+
+## Response
+
+<ResponseField name="alerts" type="array">
+  Array of alert objects sorted by priority (critical, warning, info)
+  
+  <ResponseField name="id" type="string">
+    Unique identifier for the alert (e.g., `expired-doc-123`, `training-45`, `part-789`)
+  </ResponseField>
+  
+  <ResponseField name="level" type="string">
+    Alert criticality level: `critical`, `warning`, or `info`
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    Brief title describing the alert type
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Detailed description including relevant entity information
+  </ResponseField>
+  
+  <ResponseField name="timestamp" type="string">
+    ISO 8601 timestamp (expiration date for documents/trainings, current time for parts)
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="total" type="integer">
+  Total number of alerts returned (max 20)
+</ResponseField>
+
+<RequestExample>
+
+```bash Default Request
+curl -X GET "https://api.sigsaho.com/dashboard/alerts" \
+  -H "Cookie: token=your_jwt_token"
+```
+
+```bash Custom Warning Periods
+curl -X GET "https://api.sigsaho.com/dashboard/alerts?doc_warning_days=45&training_warning_days=14" \
+  -H "Cookie: token=your_jwt_token"
+```
+
+```bash Short Warning Period
+curl -X GET "https://api.sigsaho.com/dashboard/alerts?doc_warning_days=15" \
+  -H "Cookie: token=your_jwt_token"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 - Success
+{
+  "alerts": [
+    {
+      "id": "expired-doc-42",
+      "level": "critical",
+      "title": "Documento vencido",
+      "description": "Juan Pérez - LICENCIA PILOTO COMERCIAL",
+      "timestamp": "2026-02-15T00:00:00.000Z"
+    },
+    {
+      "id": "part-156",
+      "level": "critical",
+      "title": "Parte: Límite excedido",
+      "description": "ENG-001 - Bell 407 (XB-ABC)",
+      "timestamp": "2026-03-04T10:30:00.000Z"
+    },
+    {
+      "id": "expiring-doc-89",
+      "level": "warning",
+      "title": "Documento por vencer",
+      "description": "María García - CERTIFICADO MEDICO",
+      "timestamp": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "id": "part-234",
+      "level": "warning",
+      "title": "Parte: Cerca del límite",
+      "description": "HYD-005 - Airbus H125 (XB-XYZ)",
+      "timestamp": "2026-03-04T10:30:00.000Z"
+    },
+    {
+      "id": "training-12",
+      "level": "info",
+      "title": "Capacitación próxima",
+      "description": "Curso de Actualización CRM - 10/3/2026",
+      "timestamp": "2026-03-10T00:00:00.000Z"
+    }
+  ],
+  "total": 5
+}
+```
+
+```json 401 - Unauthorized
+{
+  "error": "No autorizado. Se requiere sesión activa."
+}
+```
+
+```json 403 - Forbidden
+{
+  "error": "Acceso denegado. Requiere permisos de estadísticas."
+}
+```
+
+```json 500 - Server Error
+{
+  "error": "Error al obtener alertas del dashboard"
+}
+```
+
+</ResponseExample>
+
+## Alert Categories
+
+### Critical Alerts
+
+**Expired Documents**
+- Documents with `expiration_date < current_date`
+- Status must be `ACTIVE`
+- Limited to 10 most urgent (oldest expiration)
+- Format: `{userName} - {documentType}`
+
+**Overdue Aircraft Parts**
+- Parts with status `OVERDUE`
+- Exceeded operational or calendar limits
+- Limited to 10 records
+- Format: `{partNumber} - {aircraftName} ({registration})`
+
+### Warning Alerts
+
+**Expiring Documents**
+- Documents expiring within `doc_warning_days` (default: 30)
+- Status must be `ACTIVE`
+- Limited to 10 soonest to expire
+- Format: `{userName} - {documentType}`
+
+**Aircraft Parts Near Limit**
+- Parts with status `NEAR_LIMIT` or `APPROACHING_LIMIT`
+- Close to operational or calendar limits
+- Limited to 10 records
+- Format: `{partNumber} - {aircraftName} ({registration})`
+
+### Info Alerts
+
+**Upcoming Trainings**
+- Trainings scheduled within `training_warning_days` (default: 7)
+- Status must be `ACTIVE`
+- Limited to 10 soonest scheduled
+- Format: `{trainingName} - {programDate}`
+
+## Notes
+
+- Maximum 20 alerts returned across all categories
+- Alerts are pre-sorted by priority level
+- Timestamps reflect expiration/scheduled dates (not current time) for documents and trainings
+- Part alerts use current timestamp as they represent real-time status

@@ -1,0 +1,445 @@
+---
+title: Air Traffic Control
+description: Access weather information and perform weight and balance calculations for safe flight operations
+---
+
+The Air Traffic Control module provides critical pre-flight tools for flight planning, including real-time aviation weather data and comprehensive weight and balance calculations.
+
+## Overview
+
+Air Traffic Control centralizes essential flight planning and safety tools:
+
+<CardGroup cols={2}>
+  <Card title="Weather Information" icon="cloud-sun">
+    Access METAR, TAF, and NOTAM data for flight planning
+  </Card>
+  <Card title="Weight & Balance" icon="balance-scale">
+    Calculate aircraft loading and center of gravity
+  </Card>
+  <Card title="Route Planning" icon="route">
+    Plan routes with weather along the path
+  </Card>
+  <Card title="Flight Safety" icon="shield-check">
+    Ensure all flights meet safety and regulatory requirements
+  </Card>
+</CardGroup>
+
+## Weather Information
+
+Access real-time aviation weather data for informed flight planning decisions.
+
+### Weather Data Types
+
+- **METAR**: Current weather observations from airports and stations
+- **TAF**: Terminal Aerodrome Forecasts for destination planning
+- **NOTAMs**: Notices to Airmen about hazards and operational changes
+
+### Searching Weather Data
+
+The weather search panel supports multiple search strategies:
+
+<Tabs>
+  <Tab title="By Location">
+    Search weather using ICAO or FAA airport codes:
+    
+    <Steps>
+      <Step title="Select Location Search">
+        Choose the "Location" tab in the search panel.
+      </Step>
+      <Step title="Enter Airport Code">
+        Type the ICAO code (e.g., MMTO, MMMX) or FAA code for the airport.
+      </Step>
+      <Step title="Search">
+        Click "Search" to retrieve current METAR and TAF data.
+      </Step>
+      <Step title="View Results">
+        Results display in table format with decoded weather information.
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="By Route">
+    Search weather along a planned route:
+    
+    <Steps>
+      <Step title="Select Route Search">
+        Choose the "Route" tab in the search panel.
+      </Step>
+      <Step title="Enter Waypoints">
+        Input waypoints along your planned route separated by spaces or commas.
+      </Step>
+      <Step title="Set Buffer">
+        Define a geographic buffer (in nautical miles) around the route.
+      </Step>
+      <Step title="Search">
+        Click "Search" to retrieve weather for all stations along and near the route.
+      </Step>
+      <Step title="Review Route Weather">
+        View weather conditions sequentially along your planned flight path.
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Free Text">
+    Perform open-ended weather searches:
+    
+    <Steps>
+      <Step title="Select Free Text Search">
+        Choose the "Free Text" tab.
+      </Step>
+      <Step title="Enter Search Terms">
+        Type any search terms (region names, multiple airports, etc.).
+      </Step>
+      <Step title="Search">
+        The system interprets your query and returns relevant weather data.
+      </Step>
+      <Step title="Refine Results">
+        Use filters to narrow results by weather type or severity.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+### Understanding METAR Data
+
+METAR reports contain encoded weather observations. The system displays:
+
+- **Station**: Airport or weather station identifier
+- **Time**: Observation time (Zulu/UTC)
+- **Wind**: Direction and speed, gusts if present
+- **Visibility**: In statute miles or meters
+- **Weather Phenomena**: Rain, fog, thunderstorms, etc.
+- **Clouds**: Coverage and altitude of cloud layers
+- **Temperature/Dewpoint**: In Celsius
+- **Altimeter**: Barometric pressure setting
+- **Remarks**: Additional information and trends
+
+### Filtering Weather Data
+
+Filter weather results for relevant information:
+
+- **By Weather Class**: Filter NOTAMs by classification
+- **By Severity**: Show only significant weather
+- **By Time**: Display forecasts for specific time windows
+- **By Distance**: For route searches, filter by distance from route
+
+### Refreshing Weather Data
+
+Weather information is time-sensitive:
+
+- Weather data shows the observation time
+- Click "Refresh" to get the latest observations
+- METAR updates typically every hour or when conditions change
+- TAF updates every 6 hours or as needed
+
+<Note>
+Always check the observation time. Weather older than 1 hour may not reflect current conditions.
+</Note>
+
+## Weight and Balance
+
+Weight and balance calculations are critical for every flight to ensure:
+
+- Aircraft operates within structural weight limits
+- Center of gravity remains within approved envelope
+- Aircraft handling characteristics are predictable and safe
+
+### Creating a New Weight and Balance Calculation
+
+<Steps>
+  <Step title="Access Weight & Balance">
+    Navigate to Air Traffic Control > Weight & Balance.
+  </Step>
+  <Step title="View Existing Calculations">
+    The main page displays a table of all previous weight and balance calculations.
+  </Step>
+  <Step title="Start New Calculation">
+    Click "New Weight & Balance" to open the calculation form.
+  </Step>
+  <Step title="Select Aircraft">
+    Choose the aircraft from the dropdown. The system auto-populates:
+    - Basic empty weight
+    - Empty center of gravity
+    - Empty moment
+  </Step>
+  <Step title="Complete the Loading Table">
+    Fill in the weight and balance table (see detailed steps below).
+  </Step>
+  <Step title="Review Calculations">
+    Verify that all totals are within limits.
+  </Step>
+  <Step title="Save Calculation">
+    Save the weight and balance sheet for flight records.
+  </Step>
+</Steps>
+
+### Weight and Balance Table Structure
+
+The weight and balance form is a data-driven table with different row types:
+
+#### Row Types
+
+**Static Rows**: Display labels and headers (not editable)
+
+**Input Rows**: Require data entry, including:
+- Pilot weight and seating position
+- Passenger weights and positions
+- Cargo weights and locations
+- Fuel quantities and tank positions
+
+**Subtotal Rows**: Automatically calculated:
+- Operating empty weight totals
+- Operating with fuel totals
+- Ramp weight subtotals
+
+**Total Rows**: Final calculations for:
+- Takeoff weight, CG, moment, and MAC
+- Landing weight, CG, moment, and MAC
+
+### Completing the Weight and Balance Form
+
+<Steps>
+  <Step title="Basic Empty Weight">
+    This section auto-populates from aircraft data:
+    - Weight empty
+    - CG empty
+    - Moment empty
+  </Step>
+  
+  <Step title="Fuel Loading">
+    Enter fuel information:
+    - Weight of fuel (in pounds or kilograms)
+    - Arm (distance from datum, usually pre-set)
+    - Moment calculates automatically (Weight × Arm)
+  </Step>
+  
+  <Step title="Pilot in Command">
+    Enter pilot data:
+    - Weight (from crew member profile or manual entry)
+    - Arm (seat position arm)
+    - Moment auto-calculates
+  </Step>
+  
+  <Step title="Additional Crew">
+    For each crew member:
+    - Enter weight
+    - Specify seating position arm
+    - System calculates moment
+  </Step>
+  
+  <Step title="Passengers">
+    For each passenger row:
+    - Enter passenger weight
+    - Specify seat position arm
+    - Moment auto-calculates
+  </Step>
+  
+  <Step title="Cargo">
+    For each cargo area:
+    - Enter cargo weight
+    - Specify cargo compartment arm
+    - Moment auto-calculates
+  </Step>
+  
+  <Step title="Review Subtotals">
+    The system automatically calculates:
+    - **Operating Empty Weight**: Basic empty + crew
+    - **Operating Fuel Weight**: Operating empty + fuel
+    - **Ramp Weight**: All items loaded
+  </Step>
+  
+  <Step title="Takeoff Calculations">
+    Review takeoff parameters:
+    - **Total Takeoff Weight**: Sum of all weights
+    - **Takeoff CG**: Total moment ÷ total weight
+    - **Takeoff MAC**: CG position as percentage of mean aerodynamic chord
+  </Step>
+  
+  <Step title="Landing Calculations">
+    Review landing parameters (accounting for fuel burn):
+    - **Landing Weight**: Takeoff weight - fuel to be burned
+    - **Landing CG**: Adjusted for fuel burn
+    - **Landing MAC**: Landing CG as percentage of MAC
+  </Step>
+</Steps>
+
+### Verifying Weight and Balance Limits
+
+After completing the calculation, verify all values against aircraft limits:
+
+<AccordionGroup>
+  <Accordion title="Maximum Takeoff Weight">
+    Ensure the calculated takeoff weight does not exceed the aircraft's maximum takeoff weight (MTOW). If over, reduce fuel, passengers, or cargo.
+  </Accordion>
+  
+  <Accordion title="Center of Gravity Envelope">
+    The takeoff and landing CG must fall within the approved CG envelope for the aircraft. Consult the aircraft flight manual for the envelope chart.
+  </Accordion>
+  
+  <Accordion title="Maximum Landing Weight">
+    Verify the landing weight is at or below maximum landing weight (MLW). If over, burn down fuel before landing.
+  </Accordion>
+  
+  <Accordion title="MAC Percentage">
+    The MAC percentage should typically be between 15% and 35% for most aircraft. Consult your aircraft's specific limits.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+**CRITICAL SAFETY NOTICE**
+
+Never depart on a flight if:
+- Takeoff weight exceeds maximum takeoff weight
+- Takeoff or landing CG falls outside the approved envelope
+- MAC percentage is outside approved limits
+
+Replan the loading and recalculate. Safety is paramount.
+</Warning>
+
+### Adjusting Out-of-Limits Calculations
+
+If calculations are out of limits:
+
+**For Over-Weight Conditions:**
+1. Reduce fuel to minimum required plus reserves
+2. Reduce passenger count
+3. Reduce or redistribute cargo
+4. Consider a fuel stop to reduce takeoff fuel
+
+**For CG Out of Envelope:**
+1. Redistribute passengers to different seats
+2. Move cargo to different compartments
+3. Adjust fuel distribution (if multiple tanks)
+4. Add ballast in appropriate location (if available)
+
+### Saving and Printing Weight and Balance
+
+Once verified:
+
+<Steps>
+  <Step title="Final Review">
+    Review all entries for accuracy.
+  </Step>
+  <Step title="Save Calculation">
+    Click "Save" to store the weight and balance sheet.
+  </Step>
+  <Step title="Print for Flight">
+    Print or export the calculation to PDF.
+  </Step>
+  <Step title="File with Flight Documents">
+    Include the weight and balance sheet with the flight's official documentation.
+  </Step>
+</Steps>
+
+## Viewing Historical Weight and Balance Records
+
+The Weight and Balance dashboard displays all previous calculations:
+
+### Table Columns
+
+- **Date**: When the calculation was created
+- **Aircraft**: Which aircraft the calculation is for
+- **Registered By**: Who created the calculation
+- **Pilot in Command**: The assigned pilot
+- **Takeoff Weight**: Total takeoff weight
+- **Takeoff CG**: Center of gravity at takeoff
+- **Status**: Whether within limits or flagged for review
+- **Actions**: View details, print, or delete
+
+### Searching Historical Records
+
+- **Filter by Aircraft**: View calculations for a specific aircraft
+- **Filter by Date Range**: Find calculations within a date range
+- **Filter by Pilot**: See calculations for a specific pilot
+- **Sort**: Sort by any column to organize data
+
+### Viewing Calculation Details
+
+Click on any calculation row to view:
+
+- Complete weight and balance table
+- All calculated subtotals and totals
+- Pilot and crew information
+- Associated flight transfer (if linked)
+- Creation and modification history
+
+## Integration with Flight Operations
+
+Weight and balance calculations integrate with flight operations:
+
+- Link W&B calculations to specific flight transfers
+- Auto-populate crew weights from personnel profiles
+- Verify crew qualifications before flight
+- Automatically update aircraft flight hours after completed missions
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Check Weather Before Every Flight">
+    Always check current weather and forecasts for origin, destination, and alternates before departure. Weather can change rapidly.
+  </Accordion>
+  
+  <Accordion title="Weight and Balance for Every Flight">
+    Complete a weight and balance calculation for every flight, even if the loading appears similar to previous flights. Small changes matter.
+  </Accordion>
+  
+  <Accordion title="Conservative Estimates">
+    When estimating passenger or cargo weights, round up. It's safer to overestimate weight than underestimate.
+  </Accordion>
+  
+  <Accordion title="Document Everything">
+    Keep weight and balance sheets and weather briefings as part of your official flight records for compliance and accident investigation.
+  </Accordion>
+  
+  <Accordion title="Re-check Before Departure">
+    If there are any last-minute changes to loading or weather deteriorates, re-do your calculations and weather check.
+  </Accordion>
+  
+  <Accordion title="Know Your Aircraft Limits">
+    Memorize your aircraft's maximum weights and CG envelope. Don't rely solely on the system to flag issues.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Weather Data Not Loading">
+    If weather data fails to load:
+    - Check your internet connection
+    - Verify the airport code is correct (ICAO format)
+    - Try refreshing the page
+    - Weather stations may be temporarily offline
+  </Accordion>
+  
+  <Accordion title="Weight and Balance Calculations Incorrect">
+    If calculations seem wrong:
+    - Verify aircraft basic empty weight is correct in aircraft profile
+    - Check that all arms are entered correctly
+    - Ensure weights are in consistent units (all pounds or all kg)
+    - Review each row for data entry errors
+  </Accordion>
+  
+  <Accordion title="Cannot Save Calculation">
+    If unable to save:
+    - Ensure all required fields are completed
+    - Check that totals are within aircraft limits (system may prevent saving out-of-limits calculations)
+    - Verify you have permission to create weight and balance records
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Flight Operations" icon="plane-departure" href="/features/flight-operations">
+    Link weight & balance to flight missions
+  </Card>
+  <Card title="Aircraft Management" icon="plane" href="/features/aircraft-management">
+    Manage aircraft data used in calculations
+  </Card>
+  <Card title="Crew Management" icon="users" href="/features/crew-management">
+    Access crew weights for calculations
+  </Card>
+  <Card title="Dispatch" icon="tower-control" href="/features/dispatch">
+    Pre-flight planning and dispatch
+  </Card>
+</CardGroup>

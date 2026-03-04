@@ -1,0 +1,172 @@
+---
+title: Docker Setup
+description: Deploy SIGSAHO using Docker Compose for containerized PostgreSQL database
+---
+
+## Overview
+
+SIGSAHO uses Docker Compose to orchestrate the PostgreSQL database container. The backend application runs natively while the database runs in a containerized environment.
+
+## Docker Compose Configuration
+
+The `docker-compose.yml` file defines a single PostgreSQL service:
+
+```yaml
+services:
+  db-postgres-servicio-hangar:
+    image: postgres:17-alpine
+    container_name: db-postgres-servicio-hangar
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data_servicio_hangar:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+volumes:
+  db_data_servicio_hangar:
+```
+
+### Service Details
+
+- **Image**: `postgres:17-alpine` - Lightweight PostgreSQL 17 on Alpine Linux
+- **Container Name**: `db-postgres-servicio-hangar`
+- **Restart Policy**: `always` - Automatically restarts on failure or system reboot
+- **Port**: `5432` - Standard PostgreSQL port exposed to host
+- **Volume**: `db_data_servicio_hangar` - Persistent storage for database data
+
+## Environment Variables
+
+Create a `.env` file in the `back/` directory with the following variables:
+
+```bash
+POSTGRES_DB=estadistica-hangar
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_secure_password
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+<Warning>
+Never commit the `.env` file to version control. Use `.env.example` as a template and keep credentials secure.
+</Warning>
+
+## Deployment Steps
+
+<Steps>
+  <Step title="Navigate to backend directory">
+    ```bash
+    cd ~/workspace/source/back
+    ```
+  </Step>
+
+  <Step title="Create environment file">
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Edit `.env` and configure your database credentials.
+  </Step>
+
+  <Step title="Start PostgreSQL container">
+    ```bash
+    docker compose up -d
+    ```
+    
+    The `-d` flag runs the container in detached mode.
+  </Step>
+
+  <Step title="Verify container status">
+    ```bash
+    docker compose ps
+    ```
+    
+    You should see `db-postgres-servicio-hangar` running.
+  </Step>
+
+  <Step title="Check database logs">
+    ```bash
+    docker compose logs -f db-postgres-servicio-hangar
+    ```
+    
+    Press `Ctrl+C` to exit log streaming.
+  </Step>
+</Steps>
+
+## Managing the Database Container
+
+### Stop the container
+
+```bash
+docker compose stop
+```
+
+### Restart the container
+
+```bash
+docker compose restart
+```
+
+### Stop and remove the container
+
+```bash
+docker compose down
+```
+
+<Warning>
+Using `docker compose down -v` will delete the database volume and **all data will be lost**. Only use this for complete cleanup in development.
+</Warning>
+
+### Access PostgreSQL shell
+
+```bash
+docker exec -it db-postgres-servicio-hangar psql -U postgres -d estadistica-hangar
+```
+
+## Data Persistence
+
+Database data is persisted in the Docker volume `db_data_servicio_hangar`. This ensures data survives container restarts.
+
+### Backup database
+
+```bash
+docker exec db-postgres-servicio-hangar pg_dump -U postgres estadistica-hangar > backup.sql
+```
+
+### Restore database
+
+```bash
+cat backup.sql | docker exec -i db-postgres-servicio-hangar psql -U postgres -d estadistica-hangar
+```
+
+## Troubleshooting
+
+### Port already in use
+
+If port 5432 is already occupied:
+
+1. Stop any local PostgreSQL instances
+2. Or modify the port mapping in `docker-compose.yml` to `'5433:5432'` and update `DB_PORT` in `.env`
+
+### Container fails to start
+
+Check logs for errors:
+
+```bash
+docker compose logs db-postgres-servicio-hangar
+```
+
+Common issues:
+- Invalid credentials in `.env`
+- Insufficient disk space
+- Port conflicts
+
+### Connection refused from backend
+
+Ensure:
+- Container is running: `docker compose ps`
+- `DB_HOST=localhost` in backend `.env`
+- Firewall allows connections to port 5432

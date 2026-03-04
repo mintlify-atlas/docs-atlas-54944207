@@ -1,0 +1,250 @@
+---
+title: Aircraft Management
+description: Manage your aircraft fleet, track maintenance schedules, and monitor flight hours
+---
+
+The Aircraft Management module provides comprehensive tools for managing your aviation fleet, tracking maintenance requirements, and monitoring aircraft operational status.
+
+## Overview
+
+Aircraft Management centralizes all aircraft-related data and operations in one place, allowing you to:
+
+<CardGroup cols={2}>
+  <Card title="Fleet Overview" icon="plane">
+    View and manage all aircraft in your fleet with real-time status updates
+  </Card>
+  <Card title="Maintenance Tracking" icon="wrench">
+    Track maintenance schedules, service history, and upcoming inspections
+  </Card>
+  <Card title="Flight Hours" icon="clock">
+    Monitor current flight hours, cycles, and available time before maintenance
+  </Card>
+  <Card title="Documentation" icon="file">
+    Manage aircraft documentation, certificates, and compliance records
+  </Card>
+</CardGroup>
+
+## Aircraft Registry
+
+### Registering a New Aircraft
+
+<Steps>
+  <Step title="Access Aircraft Management">
+    Navigate to the Dispatch module and select Aircraft Management from the menu.
+  </Step>
+  <Step title="Add Aircraft">
+    Click the "Add Aircraft" button to open the registration form.
+  </Step>
+  <Step title="Enter Basic Information">
+    Fill in the aircraft details:
+    - Aircraft name and registration number
+    - Category (Rotary Wing or Fixed Wing)
+    - Manufacturer and model
+    - Maximum passenger capacity
+  </Step>
+  <Step title="Configure Engine Parameters">
+    Set the engine specifications:
+    - Number of engines (1 or 2)
+    - Time limits for each engine (in hours)
+    - Cycle limits for each engine
+  </Step>
+  <Step title="Set Weight and Balance">
+    Enter the aircraft weight and balance data:
+    - Empty weight
+    - Center of gravity (CG) empty
+    - Moment empty
+  </Step>
+  <Step title="Initialize Flight Hours">
+    Record the current operational state:
+    - Current flight time (total accumulated hours)
+    - Current cycles (total accumulated cycles)
+    - Total lifetime hours available
+  </Step>
+  <Step title="Save Aircraft">
+    Review all information and save the aircraft to add it to your fleet.
+  </Step>
+</Steps>
+
+## Aircraft Status Management
+
+Each aircraft can have one of the following statuses:
+
+- **Active**: Aircraft is operational and available for missions
+- **In Maintenance**: Aircraft is undergoing scheduled or unscheduled maintenance
+- **Out of Service**: Aircraft is temporarily unavailable
+- **Eliminated**: Aircraft has been removed from the fleet (soft deleted)
+
+### Changing Aircraft Status
+
+To update an aircraft's status:
+
+1. Locate the aircraft in the fleet list
+2. Click the actions menu (three dots)
+3. Select "Change Status"
+4. Choose the new status from the dropdown
+5. Add any relevant notes or comments
+6. Confirm the status change
+
+## Flight Hours and Maintenance Tracking
+
+### Understanding Flight Hours
+
+The system automatically tracks several key metrics for each aircraft:
+
+- **Current Flight Time**: Total accumulated flight hours
+- **Available Time**: Remaining hours before next major maintenance
+- **Maintenance Due Percentage**: Visual indicator of maintenance proximity
+- **Total Lifetime Hours**: Maximum hours available before major overhaul
+
+<Note>
+The maintenance due percentage is calculated based on the hours accumulated since the last major maintenance relative to the total hours available before the next maintenance is due.
+</Note>
+
+### Viewing Flight History
+
+Access detailed flight history for any aircraft:
+
+<Steps>
+  <Step title="Select Aircraft">
+    Click on an aircraft from the fleet list to open its detail page.
+  </Step>
+  <Step title="Navigate to Flight Records">
+    Select the "Flight Records" tab to view the complete flight history.
+  </Step>
+  <Step title="Review Flight Data">
+    The flight records table displays:
+    - Date and time of each flight
+    - Flight duration and cycles
+    - Origin and destination
+    - Pilot in command and crew
+    - Fuel consumption
+    - Cumulative hours and cycles
+  </Step>
+</Steps>
+
+## Parts and Components Tracking
+
+### Managing Aircraft Parts
+
+Track critical aircraft components and their lifecycles:
+
+- **Part Identification**: Serial numbers and part numbers
+- **Installation Date**: When the part was installed
+- **Time Limits**: Hours or cycles before replacement
+- **Current Status**: Serviceable, due for replacement, or expired
+- **Documentation**: Certificates and compliance records
+
+### Adding a New Part
+
+<Steps>
+  <Step title="Open Aircraft Details">
+    Navigate to the specific aircraft in the fleet.
+  </Step>
+  <Step title="Access Parts Inventory">
+    Click on the "Parts & Components" tab.
+  </Step>
+  <Step title="Add New Part">
+    Click "Add Part" and fill in the required information:
+    - Part name and description
+    - Serial number and part number
+    - Installation date
+    - Time or cycle limits
+    - Associated documentation
+  </Step>
+  <Step title="Save Part Record">
+    Confirm the information and save the part to the aircraft inventory.
+  </Step>
+</Steps>
+
+## Aircraft Documentation
+
+### Document Types
+
+Manage various types of aircraft documentation:
+
+- **Registration Certificates**: Aircraft registration and airworthiness certificates
+- **Insurance Documents**: Proof of insurance coverage
+- **Maintenance Records**: Service logs and inspection reports
+- **Weight & Balance**: Official weight and balance documentation
+- **Operating Manuals**: Aircraft flight manuals and checklists
+
+### Uploading Documents
+
+<Steps>
+  <Step title="Navigate to Documents">
+    Open the aircraft details and select the "Documents" tab.
+  </Step>
+  <Step title="Upload File">
+    Click "Upload Document" and select the file from your computer.
+  </Step>
+  <Step title="Categorize Document">
+    Select the document type and add a description.
+  </Step>
+  <Step title="Set Expiration">
+    If applicable, set an expiration date for automatic alerts.
+  </Step>
+  <Step title="Save Document">
+    Confirm the upload to add the document to the aircraft record.
+  </Step>
+</Steps>
+
+<Warning>
+Ensure all required documentation is current and uploaded to maintain compliance with aviation regulations.
+</Warning>
+
+## Fleet Dashboard
+
+The Fleet Dashboard provides a comprehensive overview of your entire aircraft fleet:
+
+### Key Metrics
+
+- **Total Aircraft**: Number of aircraft in your fleet
+- **Operational Status**: Breakdown by aircraft status
+- **Maintenance Alerts**: Aircraft approaching maintenance due dates
+- **Flight Hours Summary**: Total fleet hours and utilization rates
+
+### Filtering and Searching
+
+Quickly find specific aircraft using:
+
+- **Search**: Filter by registration, name, or manufacturer
+- **Status Filter**: View only aircraft with specific statuses
+- **Category Filter**: Filter by rotary wing or fixed wing
+- **Sort Options**: Sort by registration, hours, or maintenance due date
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Updates">
+    Update flight hours and cycles after every mission to ensure accurate maintenance tracking and scheduling.
+  </Accordion>
+  
+  <Accordion title="Maintenance Documentation">
+    Keep all maintenance records and service reports up to date and properly documented in the system.
+  </Accordion>
+  
+  <Accordion title="Proactive Monitoring">
+    Monitor the maintenance due percentage regularly and schedule maintenance before reaching critical thresholds.
+  </Accordion>
+  
+  <Accordion title="Part Lifecycle Management">
+    Track all life-limited parts and schedule replacements in advance to avoid unscheduled downtime.
+  </Accordion>
+</AccordionGroup>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Flight Operations" icon="plane-departure" href="/features/flight-operations">
+    Record and manage flight missions
+  </Card>
+  <Card title="Service Tracking" icon="clipboard-check" href="/features/service-tracking">
+    Schedule and track maintenance services
+  </Card>
+  <Card title="Dispatch" icon="tower-control" href="/features/dispatch">
+    Manage flight dispatch operations
+  </Card>
+  <Card title="Air Traffic Control" icon="radar" href="/features/air-traffic-control">
+    Calculate weight & balance and check weather
+  </Card>
+</CardGroup>

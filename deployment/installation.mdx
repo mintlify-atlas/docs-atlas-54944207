@@ -1,0 +1,339 @@
+---
+title: Installation
+description: Step-by-step guide to install and set up SIGSAHO on your local environment
+---
+
+## Prerequisites
+
+Before installing SIGSAHO, ensure your system meets the following requirements:
+
+### System Requirements
+
+- **Node.js**: Version 20.x or higher
+- **pnpm**: Version 9.x or higher (recommended package manager)
+- **PostgreSQL**: Version 12.x or higher
+- **Git**: Latest version for cloning the repository
+
+<Warning>
+  SIGSAHO requires Node.js 20+ for both backend and frontend. Older versions may cause compatibility issues.
+</Warning>
+
+### Verify Node.js Installation
+
+Check your Node.js version:
+
+```bash
+node --version
+```
+
+If you need to install or update Node.js, visit [nodejs.org](https://nodejs.org/) or use a version manager like [nvm](https://github.com/nvm-sh/nvm).
+
+## Installing pnpm
+
+SIGSAHO uses **pnpm** as its package manager for better performance and disk space efficiency.
+
+<Steps>
+  <Step title="Install pnpm globally">
+    <CodeGroup>
+      ```bash npm
+      npm install -g pnpm
+      ```
+
+      ```bash corepack (recommended)
+      corepack enable
+      corepack prepare pnpm@latest --activate
+      ```
+
+      ```bash standalone script
+      curl -fsSL https://get.pnpm.io/install.sh | sh -
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Verify pnpm installation">
+    ```bash
+    pnpm --version
+    ```
+    
+    Expected output: `10.x.x` or higher
+  </Step>
+</Steps>
+
+## Cloning the Repository
+
+<Steps>
+  <Step title="Clone the SIGSAHO repository">
+    ```bash
+    git clone https://github.com/your-org/sigsaho.git
+    cd sigsaho
+    ```
+  </Step>
+
+  <Step title="Verify repository structure">
+    ```bash
+    ls -la
+    ```
+    
+    You should see two main directories:
+    - `back/` - Backend application
+    - `frontend/` - Frontend application
+  </Step>
+</Steps>
+
+## Installing Dependencies
+
+### Backend Installation
+
+<Steps>
+  <Step title="Navigate to backend directory">
+    ```bash
+    cd back
+    ```
+  </Step>
+
+  <Step title="Install backend dependencies">
+    ```bash
+    pnpm install
+    ```
+    
+    This will install all dependencies specified in `package.json`, including:
+    - Express.js 5.x
+    - TypeORM 0.3.x
+    - PostgreSQL driver
+    - JWT authentication
+    - AWS SDK (for S3 storage)
+    - And more...
+  </Step>
+
+  <Step title="Verify backend installation">
+    ```bash
+    pnpm list --depth=0
+    ```
+    
+    Ensure all packages are installed without errors.
+  </Step>
+</Steps>
+
+### Frontend Installation
+
+<Steps>
+  <Step title="Navigate to frontend directory">
+    ```bash
+    cd ../frontend
+    ```
+  </Step>
+
+  <Step title="Install frontend dependencies">
+    ```bash
+    pnpm install
+    ```
+    
+    This will install all dependencies, including:
+    - React 19.x
+    - TypeScript 5.x
+    - Vite 7.x
+    - Tailwind CSS 4.x
+    - TanStack Query & Table
+    - React Router v7
+    - And more...
+  </Step>
+
+  <Step title="Verify frontend installation">
+    ```bash
+    pnpm list --depth=0
+    ```
+    
+    Ensure all packages are installed without errors.
+  </Step>
+</Steps>
+
+## Database Setup
+
+<Steps>
+  <Step title="Install PostgreSQL">
+    If you don't have PostgreSQL installed:
+
+    <CodeGroup>
+      ```bash Ubuntu/Debian
+      sudo apt update
+      sudo apt install postgresql postgresql-contrib
+      ```
+
+      ```bash macOS (Homebrew)
+      brew install postgresql@16
+      brew services start postgresql@16
+      ```
+
+      ```bash Windows
+      # Download from https://www.postgresql.org/download/windows/
+      # Or use Docker:
+      docker run --name sigsaho-postgres -e POSTGRES_PASSWORD=1234 -p 5432:5432 -d postgres:16
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create database">
+    ```bash
+    # Connect to PostgreSQL
+    psql -U postgres
+
+    # Create database
+    CREATE DATABASE "estadistica-hangar";
+
+    # Exit
+    \q
+    ```
+  </Step>
+
+  <Step title="Configure database connection">
+    Set up your environment variables (see [Environment Variables](/deployment/environment-variables) for details):
+    
+    ```bash
+    cd back
+    cp .env.example .env
+    ```
+    
+    Edit `.env` with your database credentials.
+  </Step>
+</Steps>
+
+<Warning>
+  Make sure PostgreSQL is running before starting the backend application.
+</Warning>
+
+## Running the Application
+
+### Development Mode
+
+<Steps>
+  <Step title="Start the backend server">
+    ```bash
+    cd back
+    pnpm dev
+    ```
+    
+    The backend will start on `http://localhost:3001` (or the port specified in your `.env` file).
+  </Step>
+
+  <Step title="Start the frontend development server">
+    In a new terminal:
+    
+    ```bash
+    cd frontend
+    pnpm dev
+    ```
+    
+    The frontend will start on `http://localhost:5173`.
+  </Step>
+
+  <Step title="Access the application">
+    Open your browser and navigate to:
+    
+    ```
+    http://localhost:5173
+    ```
+  </Step>
+</Steps>
+
+### Production Build
+
+<Steps>
+  <Step title="Build the backend">
+    ```bash
+    cd back
+    pnpm build
+    ```
+    
+    This compiles TypeScript to JavaScript in the `dist/` folder.
+  </Step>
+
+  <Step title="Build the frontend">
+    ```bash
+    cd frontend
+    pnpm build
+    ```
+    
+    This creates an optimized production build in the `dist/` folder.
+  </Step>
+
+  <Step title="Start production server">
+    ```bash
+    # Backend
+    cd back
+    pnpm start
+
+    # Frontend (preview)
+    cd frontend
+    pnpm preview
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+  <Accordion title="pnpm: command not found">
+    Install pnpm globally:
+    ```bash
+    npm install -g pnpm
+    ```
+    Or enable corepack:
+    ```bash
+    corepack enable
+    ```
+  </Accordion>
+
+  <Accordion title="PostgreSQL connection refused">
+    Ensure PostgreSQL is running:
+    ```bash
+    # Linux/macOS
+    sudo systemctl status postgresql
+    # or
+    brew services list
+
+    # Start if not running
+    sudo systemctl start postgresql
+    # or
+    brew services start postgresql@16
+    ```
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    Change the port in your `.env` file:
+    ```bash
+    # Backend
+    PORT=3002
+
+    # Frontend: Update vite.config.ts or run
+    pnpm dev --port 5174
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript compilation errors">
+    Ensure you're using the correct Node.js version:
+    ```bash
+    node --version  # Should be 20.x or higher
+    ```
+    
+    Clear dependencies and reinstall:
+    ```bash
+    rm -rf node_modules pnpm-lock.yaml
+    pnpm install
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+After successful installation:
+
+1. Configure your environment variables - see [Environment Variables](/deployment/environment-variables)
+2. Set up application configuration - see [Configuration](/deployment/configuration)
+3. Run database migrations (if applicable)
+4. Start developing!
+
+<Card title="Need Help?" icon="question" href="/support">
+  Check our support documentation or contact the development team.
+</Card>

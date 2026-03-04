@@ -1,0 +1,420 @@
+---
+title: "Reports Guide"
+description: "Generate and download operational reports from SIGSAHO"
+---
+
+SIGSAHO provides comprehensive reporting capabilities to help you analyze operational data, track performance, and maintain compliance records. This guide covers how to generate, customize, and export reports.
+
+## Overview
+
+The reporting system offers:
+
+- **Operational Statistics**: Flight data, transfers, and service metrics
+- **Personnel Reports**: User records and crew activity
+- **Aircraft Reports**: Maintenance history and flight logs
+- **Transfer Cards**: Detailed transfer and medical transfer documents
+- **Custom Date Ranges**: Filter data by specific time periods
+- **Multiple Export Formats**: PDF and Excel (XLSX) output
+
+<Note>
+Report access depends on your user role. Some reports require administrative or editorial permissions.
+</Note>
+
+## Report Types
+
+### Operational Statistics Reports
+
+Comprehensive analytics on flight operations, transfers, and services.
+
+**Available Data:**
+- Total operations by category
+- Service distribution (medical, general, training)
+- Geographic breakdown by region
+- Hospital transfer statistics
+- Pilot and aircraft performance rankings
+- Monthly and yearly trends
+
+**Access Requirements:**
+- Roles: `ADMINISTRADOR`, `DIRECTOR`, `EDITOR-TM`, `EDITOR-TG`, `DESPACHADOR`
+- Location: Statistics module → Advanced Search → Export button
+
+### Personnel Reports
+
+Detailed technical files for aeronautical personnel.
+
+**Includes:**
+- Personal information
+- Role and certifications
+- Flight hours and activity log
+- Training records
+- Performance metrics
+- Contact details
+
+**Access Requirements:**
+- Roles: `ADMINISTRADOR`, `DIRECTOR`
+- Location: Personnel management → User detail page → Export button
+
+### Aircraft Reports
+
+Monthly status reports for each aircraft in the fleet.
+
+**Contains:**
+- Aircraft registration and model
+- Total flight hours (cumulative and monthly)
+- Maintenance history
+- Service records
+- Operational status
+- Next scheduled maintenance
+
+**Access Requirements:**
+- Roles: `ADMINISTRADOR`, `MANTENIMIENTO`, `DIRECTOR`
+- Location: Aircraft management → Aircraft detail page → Monthly Report
+
+### Transfer Cards
+
+Official documents for individual transfers or medical transports.
+
+**Details:**
+- Transfer identification number
+- Date and time
+- Origin and destination
+- Aircraft and crew assigned
+- Patient information (medical transfers)
+- Medical observations (medical transfers)
+- Flight route and duration
+
+**Access Requirements:**
+- Roles: `ADMINISTRADOR`, `DESPACHADOR`, `EDITOR-TM`
+- Location: Transfer detail page → Download Card (PDF)
+
+## Generating Reports
+
+### From the Statistics Page
+
+<Steps>
+  <Step title="Navigate to Statistics">
+    From the main navigation, select "Statistics" or "Estadísticas".
+  </Step>
+
+  <Step title="Configure filters (optional)">
+    Use the filter panel to refine your data:
+    - **Date Range**: Select start and end dates
+    - **Category**: Choose operation type (medical, general, training)
+    - **Region**: Filter by geographic area
+    - **Aircraft**: Select specific aircraft
+    
+    Click "Generate" or "Generar" to apply filters.
+  </Step>
+
+  <Step title="Review the data">
+    Verify the displayed statistics match your requirements. The page shows:
+    - Summary KPIs
+    - Regional distribution charts
+    - Top performers (pilots, aircraft, hospitals)
+    - Category breakdowns
+  </Step>
+
+  <Step title="Export the report">
+    Click the "Export Report" or "Exportar Reporte" button (typically with a download icon). Choose your preferred format:
+    - **PDF**: Formatted document with charts and tables
+    - **Excel**: Spreadsheet with raw data for further analysis
+  </Step>
+
+  <Step title="Download and review">
+    Your browser will download the file automatically. The filename includes:
+    - Report type
+    - Date range (if applicable)
+    - Timestamp of generation
+    
+    Example: `estadisticas-operativas_2026-03-04.pdf`
+  </Step>
+</Steps>
+
+<Tip>
+Generate reports with specific date ranges for monthly or quarterly reviews. Use year-to-date ranges for annual reporting.
+</Tip>
+
+### From Detail Pages
+
+Many entities have dedicated report generation:
+
+<Steps>
+  <Step title="Navigate to the entity detail page">
+    Examples:
+    - Click a user from the personnel list
+    - Select an aircraft from fleet management
+    - Open a transfer record
+  </Step>
+
+  <Step title="Locate the export action">
+    Look for buttons labeled:
+    - "Download Report"
+    - "Generate Card"
+    - "Export PDF"
+    - "Download Technical File"
+    
+    These are typically in the page header or action menu.
+  </Step>
+
+  <Step title="Click to generate">
+    The report generates automatically based on the current entity. No additional configuration needed.
+  </Step>
+
+  <Step title="Save the downloaded file">
+    The PDF or Excel file downloads immediately with a descriptive filename.
+  </Step>
+</Steps>
+
+## Report Formats
+
+### PDF Reports
+
+PDF documents are ideal for:
+- Official records and archival
+- Printing and physical distribution
+- Presentations and briefings
+- Read-only distribution
+
+**Features:**
+- Institutional header with SIGSAHO branding
+- Professional formatting with color-coded sections
+- Automatic page numbering
+- Generation timestamp
+- Embedded charts and visualizations
+- Summary statistics at the top
+- Detailed tables with alternating row colors
+
+**Technical Specifications:**
+- Format: Letter size (8.5" × 11")
+- Orientation: Portrait (default) or Landscape (for wide tables)
+- Font: Helvetica family
+- Color scheme: SIGSAHO brand colors (maroon #9D2449)
+
+### Excel Reports
+
+Excel (XLSX) workbooks are ideal for:
+- Data analysis and manipulation
+- Creating custom charts
+- Integration with other systems
+- Long-term data storage
+
+**Features:**
+- Institutional header rows (frozen for scrolling)
+- Multiple sheets for complex reports
+- Color-coded headers and alternating rows
+- Optimized column widths
+- Cell value sanitization (prevents formula injection)
+- Optional sheet protection (read-only mode)
+- Metadata (creator, creation date, title)
+
+**Sheet Structure:**
+1. **Row 1**: Institutional header (SIGSAHO system name)
+2. **Row 2**: Report title/subtitle
+3. **Row 3**: Date range or period
+4. **Row 4**: Column headers (frozen)
+5. **Rows 5+**: Data rows
+6. **Last row**: Total record count
+
+<Warning>
+Excel reports include formula injection protection. Any cell values starting with `=`, `+`, `-`, `@`, or tab characters are automatically prefixed with a space for security.
+</Warning>
+
+## Customizing Reports
+
+### Date Range Selection
+
+Most reports support custom date filtering:
+
+<Steps>
+  <Step title="Open the filter panel">
+    On statistics pages, click "Filters" or the filter icon.
+  </Step>
+
+  <Step title="Select date range">
+    Use the date picker to choose:
+    - **Preset ranges**: Last 7 days, Last 30 days, This month, This year
+    - **Custom range**: Click start date, then end date
+    
+    The calendar shows both months for easier selection.
+  </Step>
+
+  <Step title="Apply filters">
+    Click "Generate" to refresh the data with your selected range.
+  </Step>
+
+  <Step title="Export with filters applied">
+    The date range is automatically included in:
+    - Report subtitle
+    - Filename timestamp
+    - Excel period row
+  </Step>
+</Steps>
+
+### Column Selection (Excel Only)
+
+When exporting to Excel from advanced search:
+
+1. The export includes all columns displayed in the current view
+2. Hidden columns are excluded from the export
+3. Column order matches the table order
+
+<Tip>
+Customize your table view before exporting to control which data appears in the Excel file.
+</Tip>
+
+### Multi-Section Reports
+
+Some reports combine multiple datasets:
+
+**Example: Comprehensive Operations Report**
+- Section 1: Summary KPIs
+- Section 2: Regional breakdown
+- Section 3: Category distribution
+- Section 4: Top performers
+
+Each section appears on a separate page (PDF) or sheet (Excel).
+
+## Report Security
+
+### Data Sanitization
+
+All reports undergo automatic data sanitization:
+
+- **Formula Injection Prevention**: Special characters that could trigger formulas are neutralized
+- **Control Character Removal**: Non-printable characters are stripped from PDF content
+- **Length Limits**: Extremely long values are truncated to prevent rendering issues
+- **Type Validation**: Data types are verified before export
+
+### Access Control
+
+Report generation respects role-based permissions:
+
+- You can only generate reports for data you have permission to view
+- Sensitive fields are omitted from reports if you lack access
+- Administrative reports require elevated privileges
+
+### File Naming
+
+Generated files include timestamps to prevent overwrites:
+
+Format: `{report-type}_{YYYY-MM-DD}.{ext}`
+
+Examples:
+- `estadisticas-operativas_2026-03-04.pdf`
+- `expediente-personal-123_2026-03-04.pdf`
+- `reporte-aeronave-45_2026-03-04.xlsx`
+
+## Best Practices
+
+### Report Planning
+
+1. **Define Your Objective**: Know what insights you need before generating reports
+2. **Choose Appropriate Filters**: Use date ranges and categories to focus on relevant data
+3. **Select the Right Format**:
+   - PDF for distribution and archival
+   - Excel for analysis and manipulation
+4. **Verify Data Accuracy**: Review statistics on-screen before exporting
+
+### Regular Reporting
+
+Establish a reporting schedule:
+
+- **Daily**: Urgent alerts summary, recent flights
+- **Weekly**: Operational statistics, resource utilization
+- **Monthly**: Aircraft maintenance reports, personnel performance
+- **Quarterly**: Trend analysis, year-over-year comparisons
+- **Annually**: Comprehensive operational review, compliance reports
+
+### File Organization
+
+Organize downloaded reports:
+
+1. Create folders by report type and time period
+2. Use consistent naming conventions
+3. Archive historical reports systematically
+4. Back up critical reports to secure storage
+
+### Data Interpretation
+
+- Compare reports across time periods to identify trends
+- Look for anomalies or unexpected patterns
+- Cross-reference data between different report types
+- Share insights with relevant stakeholders
+
+## Troubleshooting
+
+### Report Won't Generate
+
+**Possible Causes:**
+- Insufficient permissions
+- Invalid date range (future dates, end before start)
+- No data available for selected filters
+- Server connectivity issues
+
+**Solutions:**
+1. Verify you have permission to access the report type
+2. Check filter settings for errors
+3. Try a different date range with known data
+4. Refresh the page and try again
+5. Contact your administrator if issues persist
+
+### Download Failed
+
+1. Check browser download settings (blocked popups, download location)
+2. Ensure sufficient disk space
+3. Try a different browser
+4. Disable browser extensions temporarily
+5. Check network connection stability
+
+### PDF Shows Garbled Text
+
+- Update your PDF reader (Adobe Acrobat, Preview, etc.)
+- Try opening in a different PDF viewer
+- Re-download the file (may have been corrupted)
+
+### Excel File Won't Open
+
+- Ensure you have Excel or compatible software installed
+- Try opening with Google Sheets or LibreOffice Calc
+- Verify file wasn't corrupted during download
+- Check file extension is `.xlsx`
+
+### Data Appears Incorrect
+
+1. Verify filter settings match your intent
+2. Check date range includes expected data
+3. Compare with on-screen statistics
+4. Ensure cache hasn't caused stale data (refresh page)
+5. Report discrepancies to your administrator
+
+<Note>
+If you consistently encounter data inconsistencies, document specific examples with screenshots and filter settings, then report to technical support.
+</Note>
+
+## Performance Considerations
+
+### Large Reports
+
+Reports with extensive data may take longer to generate:
+
+- **Excel exports**: 10,000+ rows may take 10-30 seconds
+- **PDF with charts**: Complex visualizations add 5-10 seconds
+- **Multi-section reports**: Each section adds processing time
+
+<Tip>
+For very large datasets, consider breaking reports into smaller date ranges or categories.
+</Tip>
+
+### Browser Memory
+
+Excel export uses dynamic imports to minimize initial bundle size:
+
+- The ExcelJS library (~1.2 MB) loads only when you export
+- First export may be slightly slower due to library loading
+- Subsequent exports in the same session are faster (cached library)
+
+## Related Resources
+
+- [Data Export Guide](/guides/data-export) - Detailed export format specifications
+- [Dashboard Guide](/guides/dashboard) - Real-time operational monitoring and statistics
+- [Authentication](/guides/authentication) - Role-based access control
